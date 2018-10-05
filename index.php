@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<?php
+require("controlador/Base_Dat_Calibracion.php");
+$db=new Base_Dat_Calibracion();
+if($db->isError()){
+	die("Error al conectar con la base de datos!");
+}else{
+	$dato=$db->obtenerDatUs($_GET["u"]);
+	$db->closeConexion();
+	if($dato==0){
+		echo "<script>
+		datUsuario=0;
+		id_us=0;
+		</script>";
+		echo "<h3>No eres usuario... redirigiendo</h3>";
+	}else{
+		echo "<script>
+		datUsuario=".$dato[0]['tipo'].";
+		id_us=".$dato[0]['id_us'].";
+		</script>";
+	}
+}
+?>
+<html>
+<head>
+	<title>Calibración de combustible</title>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link rel="stylesheet" href="frameworks/bootstrap-3.3.7/css/bootstrap.min.css">
+	<script src="frameworks/jquery/jquery-3.3.1.min.js"></script>
+	<script src="frameworks/bootstrap-3.3.7/js/bootstrap.min.js"></script> 
+	<script src="js/xlsx.core.min.js"></script>  
+	<script src="js/xls.core.min.js"></script> 
+	<script src="js/edicion.js"></script>
+	<link rel="stylesheet" href="css/tablas.css">
+</head>
+<body >
+ <div id="carga" class="loading" style="display:none">
+		<img src='images/load.svg' width="100" />
+   </div>
+<div class="container-fluid"> 
+	<h4>Calibración de dispositivos</h4>
+	<div style="height: 400px; overflow-y: scroll;" class="col-md-12">
+		<table id="tblDispositivos">
+			<thead style="z-index: 1;">
+				<tr> <th>id</th><th>Empresa</th><th>Dispositivo</th><th>Modelo</th><th>Fabricante</th><th>Carga</th><th>Descarga</th><th>Estatus</th><th style="width: 100px;">Comandos</th></tr>
+			</thead>
+			<tbody id="resultado">
+				<tr><td>--</td><td>--</td><td>--</td><td>--</td><td>--</td><td>--</td><td>--</td><td>--</td><td>--</td></tr>
+				<tr><td>--</td><td>--</td><td>--</td><td>--</td><td>--</td><td>--</td><td>--</td><td>--</td><td>--</td></tr>
+			</tbody>
+		</table>
+		</div>
+	<div class="col-sm-offset-10">
+		<button class="btn btn-success" id="altaDisp" data-toggle="modal" data-target="#modalAlta">Alta de dispositivo</button>
+	</div>
+ <button class="btn hidden" id="abrirmodal" data-toggle="modal" data-target="#modalError"></button>
+ </div>
+ 
+<!-- Modal altas-->
+<div id="modalAlta" class="modal fade" role="dialog">
+	  <div class="modal-dialog" style="width: 90%;">
+		<div class="modal-content" >
+			<div class="modal-header" >
+				<h5 class="modal-title" id="title">Alta de dispositivo</h5>
+			</div>
+			<div class="modal-body" style=" background-color: #fff; border-radius: 10px;">
+				 <form action="" method="post">
+					<div class="form-group col-sm-2">
+						<label>ID disp.</label>
+						<input type="text" id="idDisp" title="Debe contener entre 3 y 15 caracteres." class="form-control"></input>
+					</div>
+						<div class="form-group col-sm-2">
+						<label>Umbral de carga.</label>
+						<input type="number" id="uCarga" title="Solo numeros." value="10" min='10' max='100' step='10' class="form-control"></input>
+					</div>
+					<div class="form-group col-sm-2">
+						<label>Umbral de descarga.</label>
+						<input type="number" id="uDescarga" title="Solo numeros." value="10" min='10' max='100' step='10' class="form-control"></input>
+					</div>	
+					
+					
+					<div class="form-group col-sm-2">
+						<label>Modelo.</label>
+						<input type="number" id="modelo" title="Modelo del dispositivo." value="1" min='1' max='3' step='1' class="form-control"></input>
+					</div>
+					<div class="form-group col-md-2">
+						<label for="sel1">Empresa:</label>
+						  <select class="form-control" id="usuariosSel">
+							<option value='10'>1</option>
+							<option value='10'>2</option>
+							<option value='10'>3</option>
+							<option value='10'>4</option>
+						  </select>
+					</div>
+					<div class="form-group col-sm-2">
+						<label>Numero de tanques</label>
+						<div class="input-group">
+							<div class="radio" style="display:inline;">
+								<label><input type="radio" name="tanque" id="tanque1" value="1" checked>1</label>
+							</div>
+							<div class="radio" style="display:inline;">
+								<label><input type="radio" name="tanque" id="tanque2" value="2" >2</label>
+							</div>
+							<div class="radio" style="display:inline;">
+								<label><input type="radio" name="tanque" id="tanque3" value="3" >3</label>
+							</div>
+							<div class="radio" style="display:inline;">
+								<label><input type="radio" name="tanque" id="tanque4" value="4" >4</label>
+							</div>
+						</div>
+					</div>
+					<div class="col-sm-2">
+							<input type="button" id="export-btn" value="Cargar" class="btn btn-primary"></input>
+							<input type="button" id="modificar-btn" value="Modificar" class="btn btn-primary hidden"></input>
+							<button type="button" id="cerrarAlta" class="btn btn-danger" data-dismiss="modal">Cancelar</button>
+					</div>
+					
+					<div class="col-sm-12">
+						<div id="t1" class="col-sm-3" style="display: inline;">
+							<div class="form-group">
+								<label>Tanque 1</label>
+								<input type="file" id="excelfile1" class="btn" onchange="habilitar(1)" ></input> 
+							</div>
+							<div class="form-group">
+								<input type="button" id="btnArchivo1" value="Importar" onclick="ExportToTable(1)" class="btn btn-primary" disabled="true"></input>  
+								<input type="button" id="btnClean1" value="Limpiar" onclick="limpiar(1)" class="btn"></input>
+							</div>
+						<div id="table1" class="table-editable" style="overflow-y: scroll; height: 350px; ">
+							<table id="exceltable1" class="tab">	
+								<tr>
+									<th>puntos</th><th>volumen</th><th>Agregar</th><th><span onclick="agregar(1)" class="table-add glyphicon glyphicon-plus-sign"></span></th>
+								</tr>
+							<tbody class="table1">
+							</tbody>
+							</table> 
+						</div>
+						
+						</div>
+							
+						<div id="t2" class="col-sm-3" style="display: none;">
+						<div class="form-group">
+								<label>Tanque 2</label>
+								<input type="file" id="excelfile2" class="btn" onchange="habilitar(2)" ></input> 
+							</div>
+							<div class="form-group">
+								<input type="button" id="btnArchivo2" value="Importar" onclick="ExportToTable(2)" class="btn btn-primary" disabled="true"></input> 
+								<input type="button" id="btnClean1" value="Limpiar" onclick="limpiar(2)" class="btn"></input>				
+							</div>
+						<div id="table2" class="table-editable" style=" overflow-y: scroll; height: 350px;">
+							<table id="exceltable2"  class="tab">	
+								<tr>
+									<th>puntos</th><th>volumen</th><th>Agregar</th><th><span onclick="agregar(2)" class="table-add glyphicon glyphicon-plus-sign"></span></th>
+								</tr>
+							<tbody class="table2">
+							</tbody>
+							</table> 
+						</div>
+						</div>
+
+						<div id="t3" class="col-sm-3" style="display: none;">
+						<div class="form-group">
+								<label>Tanque 3</label>
+								<input type="file" id="excelfile3" class="btn" onchange="habilitar(3)"></input> 
+							</div>
+							<div class="form-group">
+								<input type="button" id="btnArchivo3" value="Importar" onclick="ExportToTable(3)" class="btn btn-primary" disabled="true"></input>  
+								<input type="button" id="btnClean1" value="Limpiar" onclick="limpiar(3)" class="btn"></input>
+							</div>
+						<div id="table3" class="table-editable" style=" overflow-y: scroll; height: 350px;">
+							<table id="exceltable3"  class="tab">	
+								<tr>
+									<th>puntos</th><th>volumen</th><th>Agregar</th><th><span onclick="agregar(3)" class="table-add glyphicon glyphicon-plus-sign"></span></th>
+								</tr>
+								<tbody class="table3">
+							</tbody>
+							</table> 
+						</div>
+						</div>
+						
+						<div id="t4" class="col-sm-3" style="display: none;">
+						<div class="form-group">
+								<label>Tanque 4</label>
+								<input type="file" id="excelfile4" class="btn" onchange="habilitar(4)"></input> 
+							</div>
+							<div class="form-group">
+								<input type="button" id="btnArchivo4" value="Importar" onclick="ExportToTable(4)" class="btn btn-primary" disabled="true"></input>  
+								<input type="button" id="btnClean1" value="Limpiar" onclick="limpiar(4)" class="btn"></input>
+							</div>
+						<div id="table4" class="table-editable " style=" overflow-y: scroll; height: 350px;">
+							<table id="exceltable4"  class="tab">	
+								<tr>
+									<th>puntos</th><th>volumen</th><th>Agregar</th><th><span onclick="agregar(4)" class="table-add glyphicon glyphicon-plus-sign"></span></th>
+								</tr>
+								<tbody class="table4">
+							</tbody>
+							</table> 
+						</div>
+						</div>
+					</div>
+					
+				 </form>
+	 
+			</div>
+			<div class="modal-footer" style="padding: 0px; border-style: none;">
+				
+			</div>
+		</div>
+	</div>
+</div>
+ 
+ 
+ 
+<!-- Modal errores-->
+<div id="modalError" class="modal fade" role="dialog" onclick="enfocar()" onkeyup="enfocar()">
+	  <div class="modal-dialog modal-sm">
+		<div class="modal-content">
+			<div class="modal-header" >
+				<h5 class="modal-title">Mensaje</h5>
+			</div>
+			<div class="modal-body" style=" background-color: #fff; border-radius: 10px;" id="usuarioEliminar">
+				
+			</div>
+			<div class="modal-footer" style="padding: 0px; border-style: none;">
+				<button type="button" class="btn btn-default" onclick="enfocar()" data-dismiss="modal">Aceptar</button>
+			</div>
+		</div>
+	</div>
+</div>
+ <!-- Modal -->
+<div id="modalEliminar" class="modal fade" role="dialog">
+	  <div class="modal-dialog" style="width: 350px;">
+		<!-- Modal content-->
+		<div class="modal-content">
+			<div class="modal-header conazul">
+				<h4 class="modal-title">Eliminar dispositivo</h4>
+			</div>
+			<div class="modal-body" style="background-color: #fff; border-radius: 10px;" id="dispositivoEliminar">	
+			</div>
+		</div>
+	</div>
+</div>
+</body>
+
+</html>
