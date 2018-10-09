@@ -2,9 +2,10 @@ var tanques=1;
 var json;
 var campo=$("#idDisp");
 var dis;
-var datUsuario;
+var datUsuario; 
 var id_us;
 $(document).ready(function(){	
+	vista();
 	restaurar();
 	cargarDisp();
 	$("#tanque1").click(function(){
@@ -220,6 +221,31 @@ $(document).ready(function(){
 	$('#cerrarAlta').click(function(){
 		restaurar();
 	});
+	$('#menuCalibracion').click(function(){
+		$('#contenidoCalibracion').show();
+		$('#menuCalibracion').addClass('active');
+		$('#menuEmpresa').removeClass('active');
+		$('#menuModelo').removeClass('active');
+		$('#contenidoEmpresa').hide();
+		$('#contenidoModelo').hide();
+	});
+	$('#menuEmpresa').click(function(){
+		$('#contenidoEmpresa').show();
+		$('#contenidoCalibracion').hide();
+		$('#contenidoModelo').hide();
+		$('#menuCalibracion').removeClass('active');
+		$('#menuEmpresa').addClass('active');
+		$('#menuModelo').removeClass('active');
+	});
+	$('#menuModelo').click(function(){
+		$('#contenidoModelo').show();
+		$('#contenidoCalibracion').hide();
+		$('#contenidoEmpresa').hide();
+		$('#menuCalibracion').removeClass('active');
+		$('#menuEmpresa').removeClass('active');
+		$('#menuModelo').addClass('active');
+	});
+	
 });
 function validarNumero(num){
 	regex = /\d{1,3}/;
@@ -391,6 +417,7 @@ function cargarDisp(){
 						var tanques_ico="";
 						if(activo==1){
 							for(var l=0; l < est.length; l++){
+								console.log(id);
 								if(compararHora(fecha,est[l].fecha)){
 									tanques_ico+="<span class='glyphicon glyphicon glyphicon-certificate' style='color: green;'></span>";
 								}else{
@@ -438,7 +465,7 @@ function compararHora(sistema,recuperada){
 	var d_min=parseInt(recuperada.split(":")[1]);
 	var d_sec=parseInt(recuperada.split(":")[2]);
 
-		
+	console.log(hora+"->"+d_hora);
 	if(parseInt(ano)==parseInt(d_ano)){
 		if(parseInt(mes)==parseInt(d_mes)){
 			if(parseInt(dia)==parseInt(d_dia)){
@@ -542,8 +569,7 @@ function editar(){
 	);
 					
 }
-function restaurar(){
-console.log("entra a restaurar");	
+function restaurar(){	
 	$("#idDisp").val("");
 	document.getElementById('uCarga').value='10';
 	document.getElementById('uDescarga').value='10';
@@ -566,10 +592,30 @@ console.log("entra a restaurar");
 				if(d[index].activo==1)
 					$("#usuariosSel").append("<option value="+d[index].id_us+">"+d[index].nom_us+"</option>");
 			});
-			$("#usuariosSel").val(d[0].id_us);
-			console.log("termina restaurar");	
+			$.post(
+					'controlador/obtenerModelos.php',
+					dat_us,
+					function(da){
+						
+						$("#modelo").html("");
+						$.each(da,function(index){
+							$("#modelo").append("<option value="+da[index].valor+">"+da[index].nombre+"</option>");
+						});
+						$("#modelo").val(da[0].valor);
+						$("#usuariosSel").val(d[0].id_us);						
+					},'json'
+				);
 		},'json'
 	);
+}
+function vista(){
+	if(datUsuario==1){
+		$("#menuEmpresa").show();
+		$("#menuModelo").show();
+	}else if(datUsuario==2){
+		$("#menuEmpresa").hide();
+		$("#menuModelo").hide();
+	}
 }
 function eliminarDis(i){
 	var us={

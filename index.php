@@ -2,6 +2,10 @@
 <?php
 require("controlador/Base_Dat_Calibracion.php");
 $db=new Base_Dat_Calibracion();
+if(!isset($_GET['u'])){
+   header('HTTP/1.0 401 Unauthorized');
+   exit();
+}
 if($db->isError()){
 	die("Error al conectar con la base de datos!");
 }else{
@@ -12,7 +16,7 @@ if($db->isError()){
 		datUsuario=0;
 		id_us=0;
 		</script>";
-		echo "<h3>No eres usuario... redirigiendo</h3>";
+		echo "<h3>No eres usuario... redirigiendo jejej</h3>";
 	}else{
 		echo "<script>
 		datUsuario=".$dato[0]['tipo'].";
@@ -39,22 +43,34 @@ if($db->isError()){
 		<img src='images/load.svg' width="100" />
    </div>
 <div class="container-fluid"> 
-	<h4>Calibración de dispositivos</h4>
-	<div style="height: 400px; overflow-y: scroll;" class="col-md-12">
-		<table id="tblDispositivos">
-			<thead style="z-index: 1;">
-				<tr> <th>id</th><th>Empresa</th><th>Dispositivo</th><th>Modelo</th><th>Fabricante</th><th>Carga</th><th>Descarga</th><th>Estatus</th><th style="width: 100px;">Comandos</th></tr>
-			</thead>
-			<tbody id="resultado">
-				<tr><td>--</td><td>--</td><td>--</td><td>--</td><td>--</td><td>--</td><td>--</td><td>--</td><td>--</td></tr>
-				<tr><td>--</td><td>--</td><td>--</td><td>--</td><td>--</td><td>--</td><td>--</td><td>--</td><td>--</td></tr>
-			</tbody>
-		</table>
+<ul class="nav nav-tabs">
+  <li id="menuCalibracion" class="active"><a>Calibración de dispositivos</a></li>
+  <li id="menuEmpresa"><a>Alta de empresa</a></li>
+  <li id="menuModelo"><a>Alta de modelo</a></li>
+</ul>
+	<div id="contenidoCalibracion">
+		<div style="height: 400px; overflow-y: scroll;" class="col-md-12">
+			<table id="tblDispositivos">
+				<thead style="z-index: 1;">
+					<tr> <th>id</th><th>Empresa</th><th>Dispositivo</th><th>Modelo</th><th>Fabricante</th><th>Carga</th><th>Descarga</th><th>Estatus</th><th style="width: 100px;">Comandos</th></tr>
+				</thead>
+				<tbody id="resultado">
+				</tbody>
+			</table>
+			</div>
+		<div class="col-sm-offset-10">
+			<button class="btn btn-success" id="altaDisp" data-toggle="modal" data-target="#modalAlta">Alta de dispositivo</button>
 		</div>
-	<div class="col-sm-offset-10">
-		<button class="btn btn-success" id="altaDisp" data-toggle="modal" data-target="#modalAlta">Alta de dispositivo</button>
+		<button class="btn hidden" id="abrirmodal" data-toggle="modal" data-target="#modalError"></button>
 	</div>
- <button class="btn hidden" id="abrirmodal" data-toggle="modal" data-target="#modalError"></button>
+	 
+	<div id="contenidoEmpresa" style="display:none">
+		formulario empresa
+	</div>
+	
+	<div id="contenidoModelo" style="display:none">
+		formulario modelo
+	</div>
  </div>
  
 <!-- Modal altas-->
@@ -66,56 +82,58 @@ if($db->isError()){
 			</div>
 			<div class="modal-body" style=" background-color: #fff; border-radius: 10px;">
 				 <form action="" method="post">
-					<div class="form-group col-sm-2">
-						<label>ID disp.</label>
-						<input type="text" id="idDisp" title="Debe contener entre 3 y 15 caracteres." class="form-control"></input>
-					</div>
+					<div class="col-sm-12">
 						<div class="form-group col-sm-2">
-						<label>Umbral de carga.</label>
-						<input type="number" id="uCarga" title="Solo numeros." value="10" min='10' max='100' step='10' class="form-control"></input>
-					</div>
-					<div class="form-group col-sm-2">
-						<label>Umbral de descarga.</label>
-						<input type="number" id="uDescarga" title="Solo numeros." value="10" min='10' max='100' step='10' class="form-control"></input>
-					</div>	
-					
-					
-					<div class="form-group col-sm-2">
-						<label>Modelo.</label>
-						<input type="number" id="modelo" title="Modelo del dispositivo." value="1" min='1' max='3' step='1' class="form-control"></input>
-					</div>
-					<div class="form-group col-md-2">
-						<label for="sel1">Empresa:</label>
-						  <select class="form-control" id="usuariosSel">
-							<option value='10'>1</option>
-							<option value='10'>2</option>
-							<option value='10'>3</option>
-							<option value='10'>4</option>
-						  </select>
-					</div>
-					<div class="form-group col-sm-2">
-						<label>Numero de tanques</label>
-						<div class="input-group">
-							<div class="radio" style="display:inline;">
-								<label><input type="radio" name="tanque" id="tanque1" value="1" checked>1</label>
-							</div>
-							<div class="radio" style="display:inline;">
-								<label><input type="radio" name="tanque" id="tanque2" value="2" >2</label>
-							</div>
-							<div class="radio" style="display:inline;">
-								<label><input type="radio" name="tanque" id="tanque3" value="3" >3</label>
-							</div>
-							<div class="radio" style="display:inline;">
-								<label><input type="radio" name="tanque" id="tanque4" value="4" >4</label>
-							</div>
+							<label>ID disp.</label>
+							<input type="text" id="idDisp" title="Debe contener entre 3 y 15 caracteres." class="form-control"></input>
+						</div>
+							<div class="form-group col-sm-2">
+							<label>Umbral de carga.</label>
+							<input type="number" id="uCarga" title="Solo numeros." value="10" min='10' max='100' step='10' class="form-control"></input>
+						</div>
+						<div class="form-group col-sm-2">
+							<label>Umbral de descarga.</label>
+							<input type="number" id="uDescarga" title="Solo numeros." value="10" min='10' max='100' step='10' class="form-control"></input>
+						</div>	
+						
+						
+						<div class="form-group col-sm-2">
+							<label>Modelo.</label>
+							<select class="form-control" id="modelo">
+								
+							 </select>
+						</div>
+						<div class="form-group col-md-2">
+							<label for="sel1">Empresa:</label>
+							  <select class="form-control" id="usuariosSel">
+								
+							  </select>
 						</div>
 					</div>
-					<div class="col-sm-2">
-							<input type="button" id="export-btn" value="Cargar" class="btn btn-primary"></input>
-							<input type="button" id="modificar-btn" value="Modificar" class="btn btn-primary hidden"></input>
-							<button type="button" id="cerrarAlta" class="btn btn-danger" data-dismiss="modal">Cancelar</button>
+					<div class="col-md-12">
+						<div class="form-group col-sm-3">
+							<label>Numero de tanques</label>
+							<div class="input-group">
+								<div class="radio" style="display:inline;">
+									<label><input type="radio" name="tanque" id="tanque1" value="1" checked>1</label>
+								</div>
+								<div class="radio" style="display:inline;">
+									<label><input type="radio" name="tanque" id="tanque2" value="2" >2</label>
+								</div>
+								<div class="radio" style="display:inline;">
+									<label><input type="radio" name="tanque" id="tanque3" value="3" >3</label>
+								</div>
+								<div class="radio" style="display:inline;">
+									<label><input type="radio" name="tanque" id="tanque4" value="4" >4</label>
+								</div>
+							</div>
+						</div>
+						<div class="col-sm-3">
+								<input type="button" id="export-btn" value="Cargar" class="btn btn-primary"></input>
+								<input type="button" id="modificar-btn" value="Modificar" class="btn btn-primary hidden"></input>
+								<button type="button" id="cerrarAlta" class="btn btn-danger" data-dismiss="modal">Cancelar</button>
+						</div>
 					</div>
-					
 					<div class="col-sm-12">
 						<div id="t1" class="col-sm-3" style="display: inline;">
 							<div class="form-group">

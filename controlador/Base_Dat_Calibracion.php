@@ -146,6 +146,16 @@ class Base_Dat_Calibracion{
 						);	
 		return $us_dat;
 	}
+	public function obtenerModelos(){
+		$sql2 = "select * from cat_modelo;";
+		$estat = mysqli_query($this->con,$sql2);
+		while($q=mysqli_fetch_assoc($estat))
+			$mod_dat[]=array(
+							'valor'=>$q['n_modelo_id'],
+							'nombre' => $q['c_modelo_nombre']
+						);	
+		return $mod_dat;
+	}
 	public function datosDispositivo($disp){
 		$sql = "select * from dat_dispositivo
 				where n_dispositivo_id like'".$disp."';";
