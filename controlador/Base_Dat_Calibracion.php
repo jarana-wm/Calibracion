@@ -142,6 +142,8 @@ class Base_Dat_Calibracion{
 							'id_us'=>$q['n_usuario_id'],
 							'nom_us' => $q['c_usuario_nombre'],
 							'log_us' => $q['c_usuario_login'],
+							'fecha' => $q['d_usuario_expiracion'],
+							'tipo' => $q['n_tipousuario_id'],
 							'activo' => $q['b_usuario_activo']
 						);	
 		return $us_dat;

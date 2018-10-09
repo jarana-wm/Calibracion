@@ -65,7 +65,18 @@ if($db->isError()){
 	</div>
 	 
 	<div id="contenidoEmpresa" style="display:none">
-		formulario empresa
+		<div style="height: 400px; overflow-y: scroll;" class="col-md-12">
+			<table id="tblEmpresa">
+				<thead style="z-index: 1;">
+					<tr> <th>id</th><th>Nombre</th><th>fecha expiracion</th><th>tipo</th><th>activo</th><th style="width: 100px;">Comandos</th></tr>
+				</thead>
+				<tbody id="resultadoEpresa">
+				</tbody>
+			</table>
+			</div>
+		<div class="col-sm-offset-10">
+			<button class="btn btn-success" id="altaEmpresa" data-toggle="modal" data-target="#modalAltaEmp">Alta de empresa</button>
+		</div>
 	</div>
 	
 	<div id="contenidoModelo" style="display:none">

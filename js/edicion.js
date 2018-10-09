@@ -236,6 +236,7 @@ $(document).ready(function(){
 		$('#menuCalibracion').removeClass('active');
 		$('#menuEmpresa').addClass('active');
 		$('#menuModelo').removeClass('active');
+		cargarUsuarios();
 	});
 	$('#menuModelo').click(function(){
 		$('#contenidoModelo').show();
@@ -417,7 +418,6 @@ function cargarDisp(){
 						var tanques_ico="";
 						if(activo==1){
 							for(var l=0; l < est.length; l++){
-								console.log(id);
 								if(compararHora(fecha,est[l].fecha)){
 									tanques_ico+="<span class='glyphicon glyphicon glyphicon-certificate' style='color: green;'></span>";
 								}else{
@@ -425,7 +425,7 @@ function cargarDisp(){
 								}
 							}
 							salida+="<tr><td>"+id+"</td><td>"+empresa+"</td><td>"+disp+"</td><td>"+mod+"</td><td>"+fab+"</td><td>"+carga+"</td><td>"+descarga+"</td><td>"+tanques_ico+"</td><td>"
-							+"<button id='button_"+id+"'type='button' class='btn btn-info' onclick='mostrarEditar(this)'>"
+							+"<button id='button_"+id+"'type='button' class='btn btn-info' onclick='mostrarEditarDis(this)'>"
 							+"<span class='glyphicon glyphicon-edit'></span>"
 							+"</button>"
 							
@@ -433,7 +433,7 @@ function cargarDisp(){
 							+"<span class='glyphicon glyphicon-edit'></span>"
 							+"</button>"
 							
-							+"<button type='button' class='btn btn-danger' id='eliminar_"+id+"' onclick='mostrarEliminar(this)'>"
+							+"<button type='button' class='btn btn-danger' id='eliminar_"+id+"' onclick='mostrarEliminarDis(this)'>"
 							+"<span class='glyphicon glyphicon-trash'></span>"
 							+"</button>"
 							
@@ -464,8 +464,6 @@ function compararHora(sistema,recuperada){
 	var d_hora=parseInt(recuperada.split(" ")[1].split(":")[0]);
 	var d_min=parseInt(recuperada.split(":")[1]);
 	var d_sec=parseInt(recuperada.split(":")[2]);
-
-	console.log(hora+"->"+d_hora);
 	if(parseInt(ano)==parseInt(d_ano)){
 		if(parseInt(mes)==parseInt(d_mes)){
 			if(parseInt(dia)==parseInt(d_dia)){
@@ -479,7 +477,7 @@ function compararHora(sistema,recuperada){
 	}
 	return false;
 }
-function mostrarEliminar(i){
+function mostrarEliminarDis(i){
 	dis=i.id.split("_")[1];
 	var us={};
 	us['id']=dis;
@@ -498,7 +496,7 @@ function mostrarEliminar(i){
 		},'json'
 	);
 }
-function mostrarEditar(i){
+function mostrarEditarDis(i){
 	dis=i.id.split("_")[1];
 	var us={};
 	us['id']=dis;
@@ -555,7 +553,7 @@ function mostrarEditar(i){
 	);
 
 }
-function editar(){
+function editarDis(){
 	$.post(
 		'controlador/editarDispositivo.php',
 		'json='+json,
@@ -636,3 +634,52 @@ function eliminarDis(i){
 		},'json'
 	);
 }
+function cargarUsuarios(){
+	$("#carga").show();
+	var dat_us={tipo: datUsuario, id: id_us};
+	$.post(
+		'controlador/obtenerUsuarios.php',
+		dat_us,
+		function(d){
+			$("#resultadoEpresa").html("");
+					var fecha= new Date();
+					var salida="";
+					$.each(d,function(index){
+						var id = d[index].id_us;
+						var nom = d[index].nom_us;
+						var fec = d[index].fecha;
+						var tip = d[index].tipo;
+						var act = d[index].activo;
+						
+							salida+="<tr><td>"+id+"</td><td>"+nom+"</td><td>"+fec+"</td><td>"+tip+"</td><td>"+act+"</td><td>"
+							+"<button id='button_"+id+"'type='button' class='btn btn-info' onclick='mostrarEditarUsu(this)'>"
+							+"<span class='glyphicon glyphicon-edit'></span>"
+							+"</button>"
+							
+							+"<button data-toggle='modal' data-target='#modalUsuario' id='mostrar_"+id+"' type='button' class='btn btn-danger hidden'>"
+							+"<span class='glyphicon glyphicon-edit'></span>"
+							+"</button>"
+							
+							+"<button type='button' class='btn btn-danger' id='eliminar_"+id+"' onclick='mostrarEliminarUsu(this)'>"
+							+"<span class='glyphicon glyphicon-trash'></span>"
+							+"</button>"
+							
+							+"<button data-toggle='modal' data-target='#modalEliminar' id='mostrar2_"+id+"' type='button' class='btn btn-danger hidden'>"
+							+"<span class='glyphicon glyphicon-trash'></span>"
+							+"</button>"
+							+"</td></tr>";
+					});
+			$('#resultadoEpresa').append(salida);
+			$("#carga").hide();
+		},'json'
+	);
+}
+
+function mostrarEditarUsu(i){	
+	alert(i.id.split("_")[1]);
+	//modal de edicion de empresa
+}
+function mostrarEliminarUsu(i){
+	alert(i.id.split("_")[1]);
+}
+
