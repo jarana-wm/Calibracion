@@ -68,23 +68,36 @@ if($db->isError()){
 		<div style="height: 400px; overflow-y: scroll;" class="col-md-12">
 			<table id="tblEmpresa">
 				<thead style="z-index: 1;">
-					<tr> <th>id</th><th>Nombre</th><th>fecha expiracion</th><th>tipo</th><th>activo</th><th style="width: 100px;">Comandos</th></tr>
+					<tr> <th>id</th><th>Nombre</th><th>Token</th><th>Fecha expiracion</th><th>Tipo</th><th>Activo</th><th style="width: 100px;">Comandos</th></tr>
 				</thead>
 				<tbody id="resultadoEpresa">
 				</tbody>
 			</table>
 			</div>
 		<div class="col-sm-offset-10">
-			<button class="btn btn-success" id="altaEmpresa" data-toggle="modal" data-target="#modalAltaEmp">Alta de empresa</button>
+			<button class="btn btn-success" id="mostrarAltaEmp">Alta de empresa</button>
+			<button class="btn btn-success hidden" id="altaEmpresa" data-toggle="modal" data-target="#modalAltaEmp">empresa oculto</button>
 		</div>
 	</div>
 	
 	<div id="contenidoModelo" style="display:none">
-		formulario modelo
+		<div style="height: 400px; overflow-y: scroll;" class="col-md-12">
+			<table id="tblModelo">
+				<thead style="z-index: 1;">
+					<tr> <th>id</th><th>Nombre</th><th>Fabricante</th><th style="width: 100px;">Comandos</th></tr>
+				</thead>
+				<tbody id="resultadoModelo">
+				</tbody>
+			</table>
+			</div>
+		<div class="col-sm-offset-10">
+			<button class="btn btn-success" id="mostrarAltaMod">Alta de modelo</button>
+			<button class="btn btn-success hidden" id="altaModelo" data-toggle="modal" data-target="#modalAltaMod">modelo oculto</button>
+		</div>
 	</div>
  </div>
  
-<!-- Modal altas-->
+<!-- Modal alta dispositivo-->
 <div id="modalAlta" class="modal fade" role="dialog">
 	  <div class="modal-dialog" style="width: 90%;">
 		<div class="modal-content" >
@@ -96,7 +109,7 @@ if($db->isError()){
 					<div class="col-sm-12">
 						<div class="form-group col-sm-2">
 							<label>ID disp.</label>
-							<input type="text" id="idDisp" title="Debe contener entre 3 y 15 caracteres." class="form-control"></input>
+							<input type="text" id="idDisp" title="Debe contener entre 3 y 15 caracteres." class="form-control" placeholder="ID"></input>
 						</div>
 							<div class="form-group col-sm-2">
 							<label>Umbral de carga.</label>
@@ -139,7 +152,7 @@ if($db->isError()){
 								</div>
 							</div>
 						</div>
-						<div class="col-sm-3">
+						<div class="form-group col-sm-3">
 								<input type="button" id="export-btn" value="Cargar" class="btn btn-primary"></input>
 								<input type="button" id="modificar-btn" value="Modificar" class="btn btn-primary hidden"></input>
 								<button type="button" id="cerrarAlta" class="btn btn-danger" data-dismiss="modal">Cancelar</button>
@@ -237,9 +250,96 @@ if($db->isError()){
 		</div>
 	</div>
 </div>
- 
- 
- 
+<!-- Modal alta empresa-->
+<div id="modalAltaEmp" class="modal fade" role="dialog">
+	<div class="modal-dialog">
+		<div class="modal-content">
+			<div class="modal-header" >
+				<h5 class="modal-title" id="titleEmp">Alta de empresa</h5>
+			</div>
+			<div class="modal-body" style=" background-color: #fff; border-radius: 10px;">
+				<div class="form-group">
+					<label>Nombre:</label>
+					<input type="text" class="form-control" id="modeloNom" placeholder="Nombre"></input>
+				</div>
+				<div class="form-group">
+					<label>Contraseña:</label>
+					<div class="input-group">
+						<input type="password" class="form-control"  id="psw1" name="psw1" placeholder="********" required/>	
+						<span class="input-group-btn">
+							<button type="button"class="btn btn-default" name="btnvisible" onclick="pswvisible(1)"><span id="ver1" class="glyphicon glyphicon-eye-open"></span></button>
+						</span>
+					</div>
+				</div>
+				<div class="form-group">
+					<label>Repetir contraseña:</label>
+					<div class="input-group">
+						<input type="password" class="form-control"  id="psw2" name="psw2" placeholder="********" required/>	
+						<span class="input-group-btn">
+							<button type="button"class="btn btn-default" name="btnvisible" onclick="pswvisible(2)"><span id="ver2" class="glyphicon glyphicon-eye-open"></span></button>
+						</span>
+					</div>
+				</div>
+				<div class="form-group">
+					<label>Fecha de expiracion:</label>
+					<input type="date" class="form-control" id="modeloFecha" placeholder="Nombre"></input>
+				</div>
+				<div class="form-group">
+					<label>Tipo:</label>
+					<select class="form-control" id="usuariosSel">
+							<option value=1>Master</option>
+							<option value=2>Administrador</option>	
+					</select>
+				</div>
+			</div>
+			<div class="modal-footer" style="padding: 0px; border-style: none;">
+				<div class="form-group col-sm-12">
+					<input type="button" id="registrarEmp" value="Registrar" class="btn btn-primary"></input>
+					<button type="button" id="cerrarAltaEmp" class="btn btn-danger" data-dismiss="modal">Cancelar</button>
+				</div>
+			</div>
+		</div>
+	</div>
+</div> 
+<!-- Modal editar empresa-->
+<div id="modalEditEmp" class="modal fade" role="dialog">
+	<div class="modal-dialog">
+		<div class="modal-content">
+			<div class="modal-header" >
+				<h5 class="modal-title" id="titleModEmp">Modificar de empresa</h5>
+			</div>
+			<div class="modal-body" style=" background-color: #fff; border-radius: 10px;">
+				<div class="form-group">
+					<label>Nombre:</label>
+					<input type="text" class="form-control" id="modeloNomE" placeholder="Nombre"></input>
+				</div>
+				
+				<div class="form-group">
+					<label>Fecha de expiracion:</label>
+					<input type="date" class="form-control" id="modeloFechaE" placeholder="Nombre"></input>
+				</div>
+				<div class="form-group">
+					<label>Tipo:</label>
+					<select class="form-control" id="usuariosSelE">
+							<option value=1>Master</option>
+							<option value=2>Administrador</option>	
+					</select>
+				</div>
+			</div>
+			<div class="modal-footer" style="padding: 0px; border-style: none;">
+				<div class="form-group col-sm-12">
+					<input type="button" id="modEmp" value="Modificar" class="btn btn-primary"></input>
+					<input type="button" id="modificarEmp" value="mod" class="btn btn-primary hidden"></input>
+					<button type="button" id="cerrarModEmp" class="btn btn-danger" data-dismiss="modal">Cancelar</button>
+				</div>
+			</div>
+		</div>
+	</div>
+</div> 
+
+
+
+
 <!-- Modal errores-->
 <div id="modalError" class="modal fade" role="dialog" onclick="enfocar()" onkeyup="enfocar()">
 	  <div class="modal-dialog modal-sm">
@@ -251,12 +351,12 @@ if($db->isError()){
 				
 			</div>
 			<div class="modal-footer" style="padding: 0px; border-style: none;">
-				<button type="button" class="btn btn-default" onclick="enfocar()" data-dismiss="modal">Aceptar</button>
+				<button type="button" class="btn btn-default" id="aceptarMensaje" data-dismiss="modal">Aceptar</button>
 			</div>
 		</div>
 	</div>
 </div>
- <!-- Modal -->
+ <!-- Modal mensaje eliminar-->
 <div id="modalEliminar" class="modal fade" role="dialog">
 	  <div class="modal-dialog" style="width: 350px;">
 		<!-- Modal content-->

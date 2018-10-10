@@ -141,20 +141,36 @@ class Base_Dat_Calibracion{
 			$us_dat[]=array(
 							'id_us'=>$q['n_usuario_id'],
 							'nom_us' => $q['c_usuario_nombre'],
-							'log_us' => $q['c_usuario_login'],
 							'fecha' => $q['d_usuario_expiracion'],
+							'token'=> $q['c_usuario_token'],
+							'tipo' => $q['n_tipousuario_id'],
+							'activo' => $q['b_usuario_activo']
+						);	
+		return $us_dat;
+	}
+	public function obtenerUsuario($id){
+		$sql2 = "select * from dat_usuario where n_usuario_id like '".$id."';";
+		$estat = mysqli_query($this->con,$sql2);
+		while($q=mysqli_fetch_assoc($estat))
+			$us_dat[]=array(
+							'id_us'=>$q['n_usuario_id'],
+							'nom_us' => $q['c_usuario_nombre'],
+							'fecha' => $q['d_usuario_expiracion'],
+							'token'=> $q['c_usuario_token'],
 							'tipo' => $q['n_tipousuario_id'],
 							'activo' => $q['b_usuario_activo']
 						);	
 		return $us_dat;
 	}
 	public function obtenerModelos(){
-		$sql2 = "select * from cat_modelo;";
+		$sql2 = "select m.n_modelo_id,m.c_modelo_nombre,f.c_fabricante_nombre from cat_modelo m, cat_fabricante f
+				where m.n_fabricante_id=f.n_fabricante_id;";
 		$estat = mysqli_query($this->con,$sql2);
 		while($q=mysqli_fetch_assoc($estat))
 			$mod_dat[]=array(
-							'valor'=>$q['n_modelo_id'],
-							'nombre' => $q['c_modelo_nombre']
+							'id'=>$q['n_modelo_id'],
+							'nombre' => $q['c_modelo_nombre'],
+							'fabricante' => $q['c_fabricante_nombre']
 						);	
 		return $mod_dat;
 	}
@@ -326,7 +342,7 @@ class Base_Dat_Calibracion{
 						$sql3.="insert into dat_lastdata(n_dispositivo_id,n_lastdata_tanque,n_lastdata_nivel,d_lastdata_fecha)values(".intval($id_d).",".intval($k).",".intval($vt[$k]['ultimo']).",'".$fecha."');";
 					}
 					if(mysqli_multi_query($this->con,$sql3))
-						return "Dispositivo Registrado";
+						return true;
 					else	
 						return "Error al crear tablas.".mysqli_error($this->con);
 				}else{
@@ -436,12 +452,16 @@ class Base_Dat_Calibracion{
 			return "Error al modificar el ID del dispositivo.";
 		}
 	}
+	public function registrarUsuario($nombre,$con,$fecha,$tipo){
+		$sql="INSERT INTO dat_usuario(c_usuario_nombre,c_usuario_login,c_usuario_token,d_usuario_expiracion,c_usuario_host,n_tipousuario_id,b_usuario_activo)VALUES('".$nombre."','','".sha1($nombre.$con)."','".$fecha."','0.0.0.0',".$tipo.",1);";
+		if(mysqli_query($this->con,$sql))
+			return true;
+		else
+			return "No se pudo registrar la empresa".mysqli_error($this->con);
+	}
+	
+	
+	
+	
 }
-
-
-
-
-
-
-
 ?>

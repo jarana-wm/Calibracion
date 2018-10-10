@@ -8,6 +8,9 @@ $(document).ready(function(){
 	vista();
 	restaurar();
 	cargarDisp();
+	$("#aceptarMensaje").click(function(){
+		enfocar();
+	});
 	$("#tanque1").click(function(){
 		tanques=1;
 		$("#t2").css("display","none");
@@ -50,7 +53,6 @@ $(document).ready(function(){
 		var mensaje;
 		if(validar()){
 			if(validarContId($("#idDisp").val())){
-				if(validarModelo()){
 					for(var j=1; j<=tanques; j++){
 						var i=0;isData=0;
 						if($("#table"+j+" tr").length>1){
@@ -114,10 +116,6 @@ $(document).ready(function(){
 						$("#abrirmodal").click();
 						
 					}
-				}else{
-					$("#usuarioEliminar").html("<p>Verifique el modelo.</p>");
-					$("#abrirmodal").click();
-				}
 			}else{
 				$("#usuarioEliminar").html("<p>Verifique el ID.</p>");
 				$("#abrirmodal").click();
@@ -138,7 +136,6 @@ $(document).ready(function(){
 		var mensaje;
 		if(validar()){
 			if(validarContId($("#idDisp").val())){
-				if(validarModelo()){
 					for(var j=1; j<=tanques; j++){
 						var i=0;isData=0;
 						if($("#table"+j+" tr").length>1){
@@ -203,10 +200,6 @@ $(document).ready(function(){
 						$("#abrirmodal").click();
 						
 					}
-				}else{
-					$("#usuarioEliminar").html("<p>Verifique el modelo.</p>");
-					$("#abrirmodal").click();
-				}
 			}else{
 				$("#usuarioEliminar").html("<p>Verifique el ID.</p>");
 				$("#abrirmodal").click();
@@ -245,7 +238,38 @@ $(document).ready(function(){
 		$('#menuCalibracion').removeClass('active');
 		$('#menuEmpresa').removeClass('active');
 		$('#menuModelo').addClass('active');
+		cargarModelos();
 	});
+	$('#mostrarAltaEmp').click(function(){
+		$('#modeloNom').val("");
+		$('#psw1').val("");
+		$('#psw2').val("");
+		$("#ver1").removeClass("glyphicon glyphicon-eye-open");
+		$("#ver2").removeClass("glyphicon glyphicon-eye-open");
+		$("#ver1").removeClass("glyphicon glyphicon-eye-close");
+		$("#ver2").removeClass("glyphicon glyphicon-eye-close");
+		$("#ver1").addClass("glyphicon glyphicon-eye-open");
+		$("#ver2").addClass("glyphicon glyphicon-eye-open");
+		$("#psw1").attr("type","password");
+		$("#psw2").attr("type","password");
+		var sistema = new Date();
+		var dia = parseInt(sistema.getDate());
+		var mes = parseInt(sistema.getMonth())+1;
+		var ano = parseInt(sistema.getFullYear());
+		$('#modeloFecha').val(ano+"-"+mes+"-"+dia);
+		$('#usuariosSel').val(1);
+		$('#altaEmpresa').click();
+	});
+	$('#registrarEmp').click(function(){
+		registrarEmp();
+	});
+	$('#modEmp').click(function(){
+		//validamos datos
+	});
+	$('#modificarEmp').click(function(){
+		//post para modificar
+	});
+	
 	
 });
 function validarNumero(num){
@@ -352,11 +376,6 @@ function validar(){
 		return false;
 	return true;
 }
-function validarModelo(){
-	if($("#modelo").val()<1||$("#modelo").val()>3)
-		return false;
-	return true;
-}
 function validarContId(cadena){
     var patron = /^\d{3,15}$/;
     if(!cadena.search(patron))
@@ -376,11 +395,19 @@ function registrar(){
 							'controlador/registarCalibracion.php',
 							'json='+json,
 							function(data){
-								$("#usuarioEliminar").html("<p>"+data+"</p>");
-								$("#abrirmodal").click();
-								restaurar();
-								cargarDisp();
-								$("#cerrarAlta").click();
+								if(data===true){
+									$("#usuarioEliminar").html("<p>Dispositivo registrado.</p>");
+									$("#abrirmodal").click();
+									restaurar();
+									cargarDisp();
+									$("#cerrarAlta").click();
+								}else{
+									$("#usuarioEliminar").html("<p>"+data+"</p>");
+									$("#abrirmodal").click();
+									restaurar();
+									cargarDisp();
+									$("#cerrarAlta").click();
+								}
 							},'json'
 						);
 					}else{
@@ -394,6 +421,17 @@ function registrar(){
 function enfocar(){
 	campo.focus();
 }
+function pswvisible(i) {
+    var x = document.getElementById("psw"+i);
+	var y = document.getElementById("ver"+i);
+    if (x.type === "password") {
+        x.type = "text";
+		y.className  = "glyphicon glyphicon-eye-close";
+    } else {
+        x.type = "password";
+		y.className  = "glyphicon glyphicon-eye-open";
+    }
+} 
 function cargarDisp(){
 		$("#carga").show();
 		$.ajax({
@@ -584,7 +622,7 @@ function restaurar(){
 	$.post(
 		'controlador/obtenerUsuarios.php',
 		dat_us,
-		function(d){
+		function(d){console.log("entra");
 			$("#usuariosSel").html("");
 			$.each(d,function(index){
 				if(d[index].activo==1)
@@ -595,11 +633,12 @@ function restaurar(){
 					dat_us,
 					function(da){
 						
+						
 						$("#modelo").html("");
 						$.each(da,function(index){
-							$("#modelo").append("<option value="+da[index].valor+">"+da[index].nombre+"</option>");
+							$("#modelo").append("<option value="+da[index].id+">"+da[index].nombre+"</option>");
 						});
-						$("#modelo").val(da[0].valor);
+						$("#modelo").val(da[0].id);
 						$("#usuariosSel").val(d[0].id_us);						
 					},'json'
 				);
@@ -648,15 +687,19 @@ function cargarUsuarios(){
 						var id = d[index].id_us;
 						var nom = d[index].nom_us;
 						var fec = d[index].fecha;
-						var tip = d[index].tipo;
+						var tok = d[index].token;
+						var tip;
+						if(d[index].tipo==1)
+							tip = "Master";
+						else
+							tip = "Administrador";
 						var act = d[index].activo;
-						
-							salida+="<tr><td>"+id+"</td><td>"+nom+"</td><td>"+fec+"</td><td>"+tip+"</td><td>"+act+"</td><td>"
+							salida+="<tr><td>"+id+"</td><td>"+nom+"</td><td>"+tok+"</td><td>"+fec+"</td><td>"+tip+"</td><td>"+act+"</td><td>"
 							+"<button id='button_"+id+"'type='button' class='btn btn-info' onclick='mostrarEditarUsu(this)'>"
 							+"<span class='glyphicon glyphicon-edit'></span>"
 							+"</button>"
 							
-							+"<button data-toggle='modal' data-target='#modalUsuario' id='mostrar_"+id+"' type='button' class='btn btn-danger hidden'>"
+							+"<button data-toggle='modal' data-target='#modalEditEmp' id='mostrarEUs_"+id+"' type='button' class='btn btn-danger hidden'>"
 							+"<span class='glyphicon glyphicon-edit'></span>"
 							+"</button>"
 							
@@ -664,7 +707,7 @@ function cargarUsuarios(){
 							+"<span class='glyphicon glyphicon-trash'></span>"
 							+"</button>"
 							
-							+"<button data-toggle='modal' data-target='#modalEliminar' id='mostrar2_"+id+"' type='button' class='btn btn-danger hidden'>"
+							+"<button data-toggle='modal' data-target='#modalEditEmp' id='mostrar2_"+id+"' type='button' class='btn btn-danger hidden'>"
 							+"<span class='glyphicon glyphicon-trash'></span>"
 							+"</button>"
 							+"</td></tr>";
@@ -674,12 +717,164 @@ function cargarUsuarios(){
 		},'json'
 	);
 }
-
+function validarTexto(cadena){
+	var patron = /^[a-zA-ZñÑ]*$/;
+	if(!cadena.search(patron))
+		return true;
+	else
+		return false;
+}
+function validarTipo(cadena){
+    var patron = /^\d{1}$/;
+    if(!cadena.search(patron))
+		return true;
+    else
+		return false;
+}
+function validarContrasena(cadena){
+	var patron = /^(?=.*[a-zñ])(?=.*[A-ZÑ])(?=.*\d)(?=.*[$@$!"%#*?&\/\(\)])([A-Za-zñÑ\d$@$!"%#*?&\/\(\)]|[^ \{\}\[\]\=]\+){8,15}$/;
+	if(!cadena.search(patron))
+		return true;
+	else
+		return false;
+}
+function validarFecha(cadena){
+	var patron = /^\d{4}(-)\d{2}(-)\d{2}$/;
+	if(!cadena.search(patron))
+		return true;
+	else
+		return false;
+}
+function registrarEmp(){
+	var nom = $('#modeloNom');
+	var psw1 = $('#psw1');
+	var psw2 = $('#psw2');
+	var fecha = $('#modeloFecha');
+	var tipo = $('#usuariosSel');
+	if(nom.val()!=" "&&nom.val()!=""&&validarTexto(nom.val())){
+		if(psw1.val()!=" "&&psw1.val()!=""&&validarContrasena(psw1.val())){
+			if(psw2.val()!=" "&&psw2.val()!=""&&validarContrasena(psw2.val())){
+				if(psw1.val()==psw2.val()){
+					if(validarFecha(fecha.val())){
+						if(validarTipo(tipo.val())){
+							var reg={
+								nombre: nom.val(),
+									contrasena: psw1.val(),
+									fechaExp: fecha.val(),
+									tipoUs: tipo.val()
+							};
+							$.post(
+							'controlador/registrarUsuario.php',
+							reg,
+								function(data){
+									if(data===true){
+										$("#usuarioEliminar").html("<p>Empresa registrada.</p>");
+									}else{
+										$("#usuarioEliminar").html("<p>"+data+"</p>");
+									}
+									$("#abrirmodal").click();
+									$('#cerrarAltaEmp').click();
+									cargarUsuarios();
+								},'json'
+							);
+						}else{
+							$("#usuarioEliminar").html("<p>Verifique el tipo de usuario.</p>");
+							$("#abrirmodal").click();
+							campo=fecha;
+						}
+					}else{
+						$("#usuarioEliminar").html("<p>Verifique la fecha.</p>");
+						$("#abrirmodal").click();
+						campo=fecha;
+					}
+				}else{
+					$("#usuarioEliminar").html("<p>Las contraseñas no coiciden.</p>");
+					$("#abrirmodal").click();
+					campo=psw2;
+				}
+			}else{
+				$("#usuarioEliminar").html("<p>Verifique el campo repetir contraseña.</p>");
+				$("#abrirmodal").click();
+				campo=psw2;
+			}
+		}else{
+			$("#usuarioEliminar").html("<p>Verifique el campo contraseña.</p>");
+			$("#abrirmodal").click();
+			campo=psw1;
+		}
+	}else{
+		$("#usuarioEliminar").html("<p>Verifique el campo nombre.</p>");
+		$("#abrirmodal").click();
+		campo=nom;
+	}
+	
+}
 function mostrarEditarUsu(i){	
+	var id=i.id.split("_")[1];
+	var dat={};
+	dat['id']=id;
+	$.post(
+		'controlador/obtenerUsuario.php',
+		dat,
+		function(data){
+			$('#modeloNomE').val(data[0].nom_us);
+			$('#modeloFechaE').val(data[0].fecha);
+			$('#usuariosSelE').val(data[0].tipo);
+			$('#mostrarEUs_'+id).click();
+		},'json'
+	);
+}
+function mostrarEliminarUsu(i){
+	var id=i.id.split("_")[1];
+	//modal de edicion de empresa
+	$('#mostrarEUs_'+id).click();
+}
+
+
+
+
+
+function cargarModelos(){
+	$("#carga").show();
+	var dat_us={tipo: datUsuario, id: id_us};
+	$.post(
+		'controlador/obtenerModelos.php',
+		dat_us,
+		function(d){
+			$("#resultadoModelo").html("");
+					var salida="";
+					$.each(d,function(index){
+						var id = d[index].id;
+						var nom = d[index].nombre;
+						var fab = d[index].fabricante;
+						
+							salida+="<tr><td>"+id+"</td><td>"+nom+"</td><td>"+fab+"</td><td>"
+							+"<button id='button_"+id+"'type='button' class='btn btn-info' onclick='mostrarEditarMod(this)'>"
+							+"<span class='glyphicon glyphicon-edit'></span>"
+							+"</button>"
+							
+							+"<button data-toggle='modal' data-target='#modalUsuario' id='mostrar_"+id+"' type='button' class='btn btn-danger hidden'>"
+							+"<span class='glyphicon glyphicon-edit'></span>"
+							+"</button>"
+							
+							+"<button type='button' class='btn btn-danger' id='eliminar_"+id+"' onclick='mostrarEliminarMod(this)'>"
+							+"<span class='glyphicon glyphicon-trash'></span>"
+							+"</button>"
+							
+							+"<button data-toggle='modal' data-target='#modalEliminar' id='mostrar2_"+id+"' type='button' class='btn btn-danger hidden'>"
+							+"<span class='glyphicon glyphicon-trash'></span>"
+							+"</button>"
+							+"</td></tr>";
+					});
+			$('#resultadoModelo').append(salida);
+			$("#carga").hide();
+		},'json'
+	);
+}
+function mostrarEditarMod(i){	
 	alert(i.id.split("_")[1]);
 	//modal de edicion de empresa
 }
-function mostrarEliminarUsu(i){
+function mostrarEliminarMod(i){
 	alert(i.id.split("_")[1]);
 }
-
