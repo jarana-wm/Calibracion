@@ -20,8 +20,32 @@ class Base_Dat_Calibracion{
 	public function closeConexion(){
 		$this->con->close();
 	}
+	public function buscarDispositivo($nombre){
+		$sql = "select * from dat_dispositivo where c_dispositivo_id like '".$nombre."';";
+		$resultado = mysqli_query($this->con,$sql);
+		if(mysqli_num_rows($resultado)== 0)
+			return false;
+		else
+			return true;
+	}
+	public function buscarEmpresa($nombre){
+		$sql = "select * from dat_usuario where c_usuario_nombre like '".$nombre."';";
+		$resultado = mysqli_query($this->con,$sql);
+		if(mysqli_num_rows($resultado)== 0)
+			return false;
+		else
+			return true;
+	}
+	public function buscarModelo($nombre){
+		$sql = "select * from cat_modelo where c_modelo_nombre like '".$nombre."';";
+		$resultado = mysqli_query($this->con,$sql);
+		if(mysqli_num_rows($resultado)== 0)
+			return false;
+		else
+			return true;
+	}	
 	public function obtenerDatUs($hash){
-		$sql="select n_usuario_id,c_usuario_nombre,c_usuario_login,c_usuario_token,n_tipousuario_id
+		$sql="select n_usuario_id,c_usuario_nombre,c_usuario_login,c_usuario_token,n_tipousuario_id,b_usuario_activo
 		from dat_usuario
 		where c_usuario_token like '".$hash."';";
 		$resultado = mysqli_query($this->con,$sql);
@@ -31,7 +55,8 @@ class Base_Dat_Calibracion{
 								'nombre'=>$r['c_usuario_nombre'],
 								'login'=>$r['c_usuario_login'],
 								'hash'=>$r['c_usuario_token'],
-								'tipo'=>$r['n_tipousuario_id']
+								'tipo'=>$r['n_tipousuario_id'],
+								'estado'=>$r['b_usuario_activo']
 							);
 		}	
 		else
@@ -163,14 +188,27 @@ class Base_Dat_Calibracion{
 		return $us_dat;
 	}
 	public function obtenerModelos(){
-		$sql2 = "select m.n_modelo_id,m.c_modelo_nombre,f.c_fabricante_nombre from cat_modelo m, cat_fabricante f
+		$sql2 = "select m.n_modelo_id,m.c_modelo_nombre,m.n_fabricante_id,f.c_fabricante_nombre from cat_modelo m, cat_fabricante f
 				where m.n_fabricante_id=f.n_fabricante_id;";
 		$estat = mysqli_query($this->con,$sql2);
 		while($q=mysqli_fetch_assoc($estat))
 			$mod_dat[]=array(
 							'id'=>$q['n_modelo_id'],
 							'nombre' => $q['c_modelo_nombre'],
+							'id_fabricate' => $q['n_fabricante_id'],
 							'fabricante' => $q['c_fabricante_nombre']
+						);	
+		return $mod_dat;
+	}
+	public function obtenerModelo($id){
+		$sql2 = "select * from cat_modelo
+				where n_modelo_id=".$id.";";
+		$estat = mysqli_query($this->con,$sql2);
+		while($q=mysqli_fetch_assoc($estat))
+			$mod_dat[]=array(
+							'id'=>$q['n_modelo_id'],
+							'nombre' => $q['c_modelo_nombre'],
+							'fabricante' => $q['n_fabricante_id']
 						);	
 		return $mod_dat;
 	}
@@ -459,9 +497,64 @@ class Base_Dat_Calibracion{
 		else
 			return "No se pudo registrar la empresa".mysqli_error($this->con);
 	}
-	
-	
-	
-	
+	public function editarUsuario($datos){
+		$sql="update dat_usuario set c_usuario_nombre='".$datos['nombre']."' where n_usuario_id = ".$datos['id']." ";
+		if(mysqli_query($this->con,$sql)){
+			$sql="update dat_usuario set d_usuario_expiracion='".$datos['fecha']."' where n_usuario_id = ".$datos['id']." ";
+			if(mysqli_query($this->con,$sql)){
+				$sql="update dat_usuario set n_tipousuario_id='".$datos['tipo']."' where n_usuario_id = ".$datos['id']." ";
+				if(mysqli_query($this->con,$sql)){
+					return "Datos actualizados.";
+				}
+				else{
+					return "Error al actualizar el tipo de usuario.";
+				}
+			}
+			else{
+				return "Error al actualizar el fecha de expiración.";
+			}
+		}
+		else{
+			return "Error al actualizar el nombre.";
+		}
+	}
+	public function eliminarUsuario($disp){
+		$sql="update dat_usuario set b_usuario_activo = 0 where n_usuario_id like '".$disp."';";
+		if(mysqli_query($this->con,$sql))
+			return "Usuario eliminado.";
+		return "Error al eliminar el usuario.";
+	}
+	public function obtenerFabricantes(){
+		$sql = "select * from cat_fabricante;";
+		$estat = mysqli_query($this->con,$sql);
+		while($q=mysqli_fetch_assoc($estat))
+			$us_dat[]=array(
+							'id_fab'=>$q['n_fabricante_id'],
+							'nom_fab' => $q['c_fabricante_nombre']
+						);	
+		return $us_dat;
+	}
+	public function editarModelo($datos){
+		$sql="update cat_modelo set c_modelo_nombre='".$datos['nombre']."' where n_modelo_id = ".$datos['id']." ";
+		if(mysqli_query($this->con,$sql)){
+			$sql="update cat_modelo set n_fabricante_id='".$datos['fab']."' where n_modelo_id = ".$datos['id']." ";
+			if(mysqli_query($this->con,$sql)){
+				return "Modelo actualizado.";
+			}
+			else{
+				return "Error al actualizar el fabricante.";
+			}
+		}
+		else{
+			return "Error al actualizar el nombre.";
+		}
+	}
+	public function registrarModelo($nombre,$fab){
+		$sql="INSERT INTO cat_modelo(c_modelo_nombre,n_fabricante_id) VALUES('".$nombre."','".$fab."');";
+		if(mysqli_query($this->con,$sql))
+			return "Modelo registrado.";
+		else
+			return "No se pudo registrar el modelo".mysqli_error($this->con);
+	}
 }
 ?>

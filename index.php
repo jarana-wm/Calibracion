@@ -11,7 +11,7 @@ if($db->isError()){
 }else{
 	$dato=$db->obtenerDatUs($_GET["u"]);
 	$db->closeConexion();
-	if($dato==0){
+	if($dato==0||$dato[0]['estado']==0){
 		echo "<script>
 		datUsuario=0;
 		id_us=0;
@@ -62,13 +62,12 @@ if($db->isError()){
 			<button class="btn btn-success" id="altaDisp" data-toggle="modal" data-target="#modalAlta">Alta de dispositivo</button>
 		</div>
 		<button class="btn hidden" id="abrirmodal" data-toggle="modal" data-target="#modalError"></button>
-	</div>
-	 
+	</div> 
 	<div id="contenidoEmpresa" style="display:none">
 		<div style="height: 400px; overflow-y: scroll;" class="col-md-12">
 			<table id="tblEmpresa">
 				<thead style="z-index: 1;">
-					<tr> <th>id</th><th>Nombre</th><th>Token</th><th>Fecha expiracion</th><th>Tipo</th><th>Activo</th><th style="width: 100px;">Comandos</th></tr>
+					<tr> <th>id</th><th>Nombre</th><th>Token</th><th>Fecha expiracion</th><th>Tipo</th><th style="width: 100px;">Comandos</th></tr>
 				</thead>
 				<tbody id="resultadoEpresa">
 				</tbody>
@@ -79,7 +78,6 @@ if($db->isError()){
 			<button class="btn btn-success hidden" id="altaEmpresa" data-toggle="modal" data-target="#modalAltaEmp">empresa oculto</button>
 		</div>
 	</div>
-	
 	<div id="contenidoModelo" style="display:none">
 		<div style="height: 400px; overflow-y: scroll;" class="col-md-12">
 			<table id="tblModelo">
@@ -96,7 +94,6 @@ if($db->isError()){
 		</div>
 	</div>
  </div>
- 
 <!-- Modal alta dispositivo-->
 <div id="modalAlta" class="modal fade" role="dialog">
 	  <div class="modal-dialog" style="width: 90%;">
@@ -336,14 +333,99 @@ if($db->isError()){
 		</div>
 	</div>
 </div> 
-
-
-
-
+<!-- Modal mensaje eliminar dispositivo-->
+<div id="modalEliminar" class="modal fade" role="dialog">
+	  <div class="modal-dialog" style="width: 350px;">
+		<div class="modal-content">
+			<div class="modal-header conazul">
+				<h4 class="modal-title">Eliminar dispositivo</h4>
+			</div>
+			<div class="modal-body" style="background-color: #fff; border-radius: 10px;" id="dispositivoEliminar">	
+			</div>
+		</div>
+	</div>
+</div>
+ <!-- Modal mensaje eliminar empresa-->
+<div id="modalEliminarE" class="modal fade" role="dialog">
+	  <div class="modal-dialog" style="width: 350px;">
+		<div class="modal-content">
+			<div class="modal-header conazul">
+				<h4 class="modal-title">Eliminar empresa</h4>
+			</div>
+			<div class="modal-body" style="background-color: #fff; border-radius: 10px;" id="usuarioEliminarem">	
+			</div>
+		</div>
+	</div>
+</div>
+<!-- Modal editar modelo-->
+<div id="modalEditMod" class="modal fade" role="dialog">
+	<div class="modal-dialog">
+		<div class="modal-content">
+			<div class="modal-header" >
+				<h5 class="modal-title" id="titleModEmp">Modificar de modelo</h5>
+			</div>
+			<div class="modal-body" style=" background-color: #fff; border-radius: 10px;">
+				<div class="form-group">
+					<label>Nombre:</label>
+					<input type="text" class="form-control" id="nombreMod" placeholder="Nombre"></input>
+				</div>
+				<div class="form-group">
+					<label>Fabricante:</label>
+					<select class="form-control" id="selectFab">
+					</select>
+				</div>
+			</div>
+			<div class="modal-footer" style="padding: 0px; border-style: none;">
+				<div class="form-group col-sm-12">
+					<input type="button" id="modModelo" value="Modificar" class="btn btn-primary"></input>
+					<button type="button" id="cerrarModMod" class="btn btn-danger" data-dismiss="modal">Cancelar</button>
+				</div>
+			</div>
+		</div>
+	</div>
+</div> 
+<div id="modalEliminarM" class="modal fade" role="dialog">
+	  <div class="modal-dialog" style="width: 350px;">
+		<div class="modal-content">
+			<div class="modal-header conazul">
+				<h4 class="modal-title">Eliminar empresa</h4>
+			</div>
+			<div class="modal-body" style="background-color: #fff; border-radius: 10px;" id="modeloEliminarmod">	
+			</div>
+		</div>
+	</div>
+</div>
+<!-- Modal alta modelo-->
+<div id="modalAltaMod" class="modal fade" role="dialog">
+	<div class="modal-dialog">
+		<div class="modal-content">
+			<div class="modal-header" >
+				<h5 class="modal-title" id="titleModEmp">Alta de modelo</h5>
+			</div>
+			<div class="modal-body" style=" background-color: #fff; border-radius: 10px;">
+				<div class="form-group">
+					<label>Nombre:</label>
+					<input type="text" class="form-control" id="nombreModA" placeholder="Nombre"></input>
+				</div>
+				<div class="form-group">
+					<label>Fabricante:</label>
+					<select class="form-control" id="selectFabA">
+					</select>
+				</div>
+			</div>
+			<div class="modal-footer" style="padding: 0px; border-style: none;">
+				<div class="form-group col-sm-12">
+					<input type="button" id="registrarMod" value="Modificar" class="btn btn-primary"></input>
+					<button type="button" id="cerrarModAlt" class="btn btn-danger" data-dismiss="modal">Cancelar</button>
+				</div>
+			</div>
+		</div>
+	</div>
+</div> 
 <!-- Modal errores-->
 <div id="modalError" class="modal fade" role="dialog" onclick="enfocar()" onkeyup="enfocar()">
-	  <div class="modal-dialog modal-sm">
-		<div class="modal-content">
+	  <div class="modal-dialog modal-sm" >
+		<div class="modal-content"style="z-index: 99999">
 			<div class="modal-header" >
 				<h5 class="modal-title">Mensaje</h5>
 			</div>
@@ -356,19 +438,5 @@ if($db->isError()){
 		</div>
 	</div>
 </div>
- <!-- Modal mensaje eliminar-->
-<div id="modalEliminar" class="modal fade" role="dialog">
-	  <div class="modal-dialog" style="width: 350px;">
-		<!-- Modal content-->
-		<div class="modal-content">
-			<div class="modal-header conazul">
-				<h4 class="modal-title">Eliminar dispositivo</h4>
-			</div>
-			<div class="modal-body" style="background-color: #fff; border-radius: 10px;" id="dispositivoEliminar">	
-			</div>
-		</div>
-	</div>
-</div>
 </body>
-
 </html>
