@@ -1,11 +1,11 @@
 var tanques=1;
 var json;
 var campo=$("#idDisp");
-var dis; //id dipositivo
+var dis;
 var idE;
 var idM;
-var datUsuario; //tipo
-var id_us; //id ses
+var datUsuario;
+var id_us;
 $(document).ready(function(){
 	if(datUsuario!=0){
 		vista();
@@ -59,7 +59,9 @@ $(document).ready(function(){
 			if(validarContId($("#idDisp").val())){
 				$.post(
 					'controlador/buscarDispositivo.php',
-					{nombre:$("#idDisp").val()},
+					{nombre:$("#idDisp").val(),
+					poit: 1,
+					vi: 0},
 					function(res){
 						if(res===false){
 							for(var j=1; j<=tanques; j++){
@@ -155,70 +157,83 @@ $(document).ready(function(){
 		var mensaje;
 		if(validar()){
 			if(validarContId($("#idDisp").val())){
-					for(var j=1; j<=tanques; j++){
-						var i=0;isData=0;
-						if($("#table"+j+" tr").length>1){
-							$("#table"+j+" tr").each(function () {	//recorre todos los renglones
-								if(i>0){
-									var p = $(this).find("td").eq(0);
-									var v = $(this).find("td").eq(1);
-									if(validarNumero(p.html())){
-										if(validarNumero(v.html())){
-											var ob={tanque: j, puntos: p.html(), volumen: v.html()}
-											arreglo.push(ob);
-											isData++;
-										}else{
-											vacios=true;
-											tvacio=j;
-											j=5;
-											campo=v;
-											mensaje="Verifique los campos del tanque "+tvacio+".";
-											return false;
+				$.post(
+					'controlador/buscarDispositivo.php',
+					{nombre:$("#idDisp").val(),
+					poit: 2,
+					vi: dis},
+					function(res){
+						if(res===false){
+							for(var j=1; j<=tanques; j++){
+								var i=0;isData=0;
+								if($("#table"+j+" tr").length>1){
+									$("#table"+j+" tr").each(function () {	//recorre todos los renglones
+										if(i>0){
+											var p = $(this).find("td").eq(0);
+											var v = $(this).find("td").eq(1);
+											if(validarNumero(p.html())){
+												if(validarNumero(v.html())){
+													var ob={tanque: j, puntos: p.html(), volumen: v.html()}
+													arreglo.push(ob);
+													isData++;
+												}else{
+													vacios=true;
+													tvacio=j;
+													j=5;
+													campo=v;
+													mensaje="Verifique los campos del tanque "+tvacio+".";
+													return false;
+												}
+											}else{
+												vacios=true;
+												tvacio=j;
+												j=5;
+												campo=p;
+												mensaje="Verifique los campos del tanque "+tvacio+".";
+												return false;
+											}
 										}
-									}else{
-										vacios=true;
-										tvacio=j;
-										j=5;
-										campo=p;
-										mensaje="Verifique los campos del tanque "+tvacio+".";
-										return false;
-									}
+										i++;
+									});
+								}else{
+									vacios=true;
+									tvacio=j;
+									j=5;
+									mensaje="Tanque "+tvacio+" sin datos.";
 								}
-								i++;
-							});
+							}
+							if(!vacios&&isData!=0){
+								var sistema= new Date();
+								var dia = parseInt(sistema.getDate());
+								var mes = parseInt(sistema.getMonth())+1;
+								var ano = parseInt(sistema.getFullYear());
+								var hora = parseInt(sistema.getHours());
+								var minuto = parseInt(sistema.getMinutes());
+								var segundos = parseInt(sistema.getSeconds());
+								
+								var reg={
+									'id': dis,
+									'id_disp': $("#idDisp").val(),
+									'usuario': $("#usuariosSel").val(),
+									'fecha': ano+"-"+mes+"-"+dia+" "+hora+":"+minuto+":"+segundos,
+									'carga': $("#uCarga").val(),
+									'descarga': $("#uDescarga").val(),
+									'modelo': $("#modelo").val(),
+									'datos': arreglo
+								};
+								json=JSON.stringify(reg);
+								editarDis();
+							}else{
+								$("#usuarioEliminar").html("<p>"+mensaje+"</p>");
+								$("#abrirmodal").click();
+								
+							}
 						}else{
-							vacios=true;
-							tvacio=j;
-							j=5;
-							mensaje="Tanque "+tvacio+" sin datos.";
+							$("#usuarioEliminar").html("<p>El dispositivo ya se encuentra registrado</p>");
+							$("#abrirmodal").click();
 						}
-					}
-					if(!vacios&&isData!=0){
-						var sistema= new Date();
-						var dia = parseInt(sistema.getDate());
-						var mes = parseInt(sistema.getMonth())+1;
-						var ano = parseInt(sistema.getFullYear());
-						var hora = parseInt(sistema.getHours());
-						var minuto = parseInt(sistema.getMinutes());
-						var segundos = parseInt(sistema.getSeconds());
+				});
 						
-						var reg={
-							'id': dis,
-							'id_disp': $("#idDisp").val(),
-							'usuario': $("#usuariosSel").val(),
-							'fecha': ano+"-"+mes+"-"+dia+" "+hora+":"+minuto+":"+segundos,
-							'carga': $("#uCarga").val(),
-							'descarga': $("#uDescarga").val(),
-							'modelo': $("#modelo").val(),
-							'datos': arreglo
-						};
-						json=JSON.stringify(reg);
-						editar();
-					}else{
-						$("#usuarioEliminar").html("<p>"+mensaje+"</p>");
-						$("#abrirmodal").click();
-						
-					}
 			}else{
 				$("#usuarioEliminar").html("<p>Verifique el ID.</p>");
 				$("#abrirmodal").click();
@@ -285,23 +300,36 @@ $(document).ready(function(){
 	$('#modEmp').click(function(){
 		if(validarTexto($('#modeloNomE').val())&&$('#modeloNomE').val()!=''&&$('#modeloNomE').val()!=' '){
 			if(validarFecha($('#modeloFechaE').val())){
-			var dat={
-				id: idE,
-				nombre: $('#modeloNomE').val(),
-				fecha: $('#modeloFechaE').val(),
-				tipo: $('#usuariosSelE').val()
-			};
-			var json=JSON.stringify(dat);
-			$.post(
-				'controlador/editarUsuario.php',
-				'json='+json,
-				function(data){
-					$("#usuarioEliminar").html("<p>"+data+"</p>");
-					$("#abrirmodal").click();
-					$("#cerrarModEmp").click();
-					cargarUsuarios();
-				}
-			);
+				$.post(
+					'controlador/buscarEmpresa.php',
+					{nombre:$("#modeloNomE").val(),
+					poit: 2,
+					vi: idE},
+					function(res){
+						if(res===false){
+							var dat={
+								id: idE,
+								nombre: $('#modeloNomE').val(),
+								fecha: $('#modeloFechaE').val(),
+								tipo: $('#usuariosSelE').val()
+							};
+							var json=JSON.stringify(dat);
+							$.post(
+								'controlador/editarUsuario.php',
+								'json='+json,
+								function(data){
+									$("#usuarioEliminar").html("<p>"+data+"</p>");
+									$("#abrirmodal").click();
+									$("#cerrarModEmp").click();
+									cargarUsuarios();
+								}
+							);
+						}else{
+							$("#usuarioEliminar").html("<p>La empresa ya se encuentra registrada.</p>");
+							$("#abrirmodal").click();
+						}
+				});
+			
 			}else{
 				$("#usuarioEliminar").html("<p>Verifique la fecha.</p>");
 				$("#abrirmodal").click();
@@ -318,22 +346,36 @@ $(document).ready(function(){
 	$('#modModelo').click(function(){
 		var nombre=$('#nombreMod');
 		if(validarNombre(nombre.val())&&nombre.val()!=''&&nombre.val()!=' '){
-			var dat={
-				id: idM,
-				nombre: $('#nombreMod').val(),
-				fab: $('#selectFab').val()
-			};
-			var json=JSON.stringify(dat);
 			$.post(
-				'controlador/editarModelo.php',
-				'json='+json,
-				function(data){
-					$("#usuarioEliminar").html("<p>"+data+"</p>");
-					$("#abrirmodal").click();
-					$("#cerrarModMod").click();
-					cargarModelos();
-				}
-			);
+					'controlador/buscarModelo.php',
+					{nombre:$("#nombreMod").val(),
+					poit: 2,
+					vi: idM},
+					function(res){
+						if(res===false){
+							var dat={
+								id: idM,
+								nombre: $('#nombreMod').val(),
+								fab: $('#selectFab').val()
+							};
+							var json=JSON.stringify(dat);
+							$.post(
+								'controlador/editarModelo.php',
+								'json='+json,
+								function(data){
+									$("#usuarioEliminar").html("<p>"+data+"</p>");
+									$("#abrirmodal").click();
+									$("#cerrarModMod").click();
+									cargarModelos();
+								}
+							);
+						}else{
+							$("#usuarioEliminar").html("<p>El dispositivo ya se encuentra registrado</p>");
+							$("#abrirmodal").click();
+						}
+					
+				});
+			
 		}else{
 			$("#usuarioEliminar").html("<p>Verifique el campo nombre.</p>");
 			$("#abrirmodal").click();
@@ -595,10 +637,9 @@ function compararHora(sistema,recuperada){
 	if(parseInt(ano)==parseInt(d_ano)){
 		if(parseInt(mes)==parseInt(d_mes)){
 			if(parseInt(dia)==parseInt(d_dia)){
-			var inicio=hora*360+minuto*60+segundos;
-			var fin=d_hora*360+d_min*60+d_sec;
-			
-			if(Math.abs(inicio-fin)<=600)
+			var inicio=(hora*3600)+(minuto*60)+segundos;
+			var fin=(d_hora*3600)+(d_min*60)+d_sec;
+			if((inicio-fin)<=600)
 				return true;
 			}
 		}

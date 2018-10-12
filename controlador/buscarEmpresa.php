@@ -4,7 +4,7 @@
 	if($db->isError()){
 		die("Error al conectar con la base de datos!");
 	}else{
-		$dato=$db->buscarEmpresa($_POST['nombre']);
+		$dato=$db->buscarEmpresa($_POST['nombre'],$_POST['poit'],$_POST['vi']);
 		$db->closeConexion();
 		header('Content-type: application/json');
 		echo json_encode($dato);

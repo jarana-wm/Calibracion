@@ -1,4 +1,5 @@
 <?php
+//error_reporting(E_ALL);
 class Base_Dat_Calibracion{
 	private $server = "108.175.10.179";
 	private $user = "jarana";
@@ -20,24 +21,33 @@ class Base_Dat_Calibracion{
 	public function closeConexion(){
 		$this->con->close();
 	}
-	public function buscarDispositivo($nombre){
-		$sql = "select * from dat_dispositivo where c_dispositivo_id like '".$nombre."';";
+	public function buscarDispositivo($nombre, $tipo, $id){
+		if($tipo==1)
+			$sql = "select * from dat_dispositivo where c_dispositivo_id like '".$nombre."';";
+		elseif($tipo==2)
+			$sql = "select * from dat_dispositivo where c_dispositivo_id like '".$nombre."' and n_dispositivo_id != ".$id.";";
 		$resultado = mysqli_query($this->con,$sql);
 		if(mysqli_num_rows($resultado)== 0)
 			return false;
 		else
 			return true;
 	}
-	public function buscarEmpresa($nombre){
-		$sql = "select * from dat_usuario where c_usuario_nombre like '".$nombre."';";
+	public function buscarEmpresa($nombre, $tipo, $id){
+		if($tipo==1)
+			$sql = "select * from dat_usuario where c_usuario_nombre like '".$nombre."';";
+		elseif($tipo==2)
+			$sql = "select * from dat_usuario where c_usuario_nombre like '".$nombre."' and n_usuario_id != ".$id.";";
 		$resultado = mysqli_query($this->con,$sql);
 		if(mysqli_num_rows($resultado)== 0)
 			return false;
 		else
 			return true;
 	}
-	public function buscarModelo($nombre){
-		$sql = "select * from cat_modelo where c_modelo_nombre like '".$nombre."';";
+	public function buscarModelo($nombre, $tipo, $id){
+		if($tipo==1)
+			$sql = "select * from cat_modelo where c_modelo_nombre like '".$nombre."';";
+		elseif($tipo==2)
+			$sql = "select * from cat_modelo where c_modelo_nombre like '".$nombre."' and n_modelo_id != ".$id.";";
 		$resultado = mysqli_query($this->con,$sql);
 		if(mysqli_num_rows($resultado)== 0)
 			return false;
@@ -85,10 +95,9 @@ class Base_Dat_Calibracion{
 				where d.n_modelo_id=m.n_modelo_id
 					and f.n_fabricante_id=m.n_fabricante_id
 					and d.n_usuario_id=u.n_usuario_id 
-					and u.n_usuario_id like '".$id."'
+					and u.n_usuario_id = '".$id."'
 				order by 1; ";
 		}else{
-			
 			return 0;
 		}
 		$resultado = mysqli_query($this->con,$sql);
@@ -97,7 +106,7 @@ class Base_Dat_Calibracion{
 				$sql2 = "select l.n_lastdata_tanque, l.d_lastdata_fecha
 					from dat_lastdata as l, dat_dispositivo as d
 						where l.n_dispositivo_id = d.n_dispositivo_id
-							and d.n_dispositivo_id like '".$r['n_dispositivo_id']."';";
+							and d.n_dispositivo_id = '".$r['n_dispositivo_id']."';";
 				$estat = mysqli_query($this->con,$sql2);
 				$estat_dat=Array();
 				while($q=mysqli_fetch_assoc($estat))
@@ -158,7 +167,7 @@ class Base_Dat_Calibracion{
 		if($tipo==1)
 			$sql2 = "select * from dat_usuario;";
 		else if($tipo==2)
-			$sql2 = "select * from dat_usuario where n_usuario_id like '".$id."';";
+			$sql2 = "select * from dat_usuario where n_usuario_id = '".$id."';";
 		else
 			return 0;
 		$estat = mysqli_query($this->con,$sql2);
@@ -174,7 +183,7 @@ class Base_Dat_Calibracion{
 		return $us_dat;
 	}
 	public function obtenerUsuario($id){
-		$sql2 = "select * from dat_usuario where n_usuario_id like '".$id."';";
+		$sql2 = "select * from dat_usuario where n_usuario_id = '".$id."';";
 		$estat = mysqli_query($this->con,$sql2);
 		while($q=mysqli_fetch_assoc($estat))
 			$us_dat[]=array(
@@ -214,13 +223,13 @@ class Base_Dat_Calibracion{
 	}
 	public function datosDispositivo($disp){
 		$sql = "select * from dat_dispositivo
-				where n_dispositivo_id like'".$disp."';";
+				where n_dispositivo_id = '".$disp."';";
 		$resultado = mysqli_query($this->con,$sql);
 		if($resultado->num_rows >0){
 			$sql2 = "select c.n_calibracion_tanque, c.n_calibracion_puntos, c.n_calibracion_volumen, c.b_calibracion_activo
 					from dat_calibracion as c, dat_dispositivo as d
 						where c.n_dispositivo_id = d.n_dispositivo_id
-							and d.n_dispositivo_id like '".$disp."';";
+							and d.n_dispositivo_id = '".$disp."';";
 			
 			$cal = mysqli_query($this->con,$sql2);
 			if(mysqli_num_rows($cal)>0)
@@ -399,12 +408,13 @@ class Base_Dat_Calibracion{
 
 	}
 	public function eliminarDispositivo($disp){
-		$sql="update dat_dispositivo set b_dispositivo_activo = 0 where n_dispositivo_id like '".$disp."';";
+		$sql="update dat_dispositivo set b_dispositivo_activo = 0 where n_dispositivo_id = '".$disp."';";
 		if(mysqli_query($this->con,$sql))
 			return "Dispositivo eliminado.";
 		return "Error al eliminar el dispositivo.";
 	}
 	public function editarDispositivo($datos){
+		
 		$id=$datos['id'];
 		$id_disp=$datos['id_disp'];
 		$modelo=$datos['modelo'];
@@ -412,82 +422,68 @@ class Base_Dat_Calibracion{
 		$descarga=$datos['descarga'];
 		$usuario=$datos['usuario'];
 		$fecha=$datos['fecha'];
+		$sql="select c_dispositivo_id from dat_dispositivo where n_dispositivo_id=".$id.";";
+		$res=mysqli_query($this->con,$sql);
+		$numeroDispositivo=mysqli_fetch_assoc($res);
+		
+		
 		$sql="update dat_dispositivo
-			set c_dispositivo_id=".$id_disp."
+			set c_dispositivo_id=".$id_disp." , n_dispositivo_umbralcarga=".$carga.",n_dispositivo_umbraldescarga=".$descarga.",n_modelo_id=".$modelo.",n_usuario_id=".$usuario."
 			where n_dispositivo_id = ".$id.";";
-		if(mysqli_query($this->con,$sql)){
-			$sql="update dat_dispositivo
-			set n_dispositivo_umbralcarga=".$carga."
+		if($algo=mysqli_query($this->con,$sql)){
+			$sql="update dat_calibracion
+			set b_calibracion_activo='0'
 			where n_dispositivo_id = ".$id.";";
-			if(mysqli_query($this->con,$sql)){
-				$sql="update dat_dispositivo
-				set n_dispositivo_umbraldescarga=".$descarga."
-				where n_dispositivo_id = ".$id.";";
-				if(mysqli_query($this->con,$sql)){
-					$sql="update dat_dispositivo
-					set n_modelo_id=".$modelo."
-					where n_dispositivo_id = ".$id.";";
-					if(mysqli_query($this->con,$sql)){
-						$sql="update dat_dispositivo
-						set n_usuario_id=".$usuario."
-						where n_dispositivo_id = ".$id.";";
-						if(mysqli_query($this->con,$sql)){
-							$sql="update dat_calibracion
-							set b_calibracion_activo='0'
-							where n_dispositivo_id = ".$id.";";
-							if(mysqli_query($this->con,$sql)){
-								$sql2="insert into dat_calibracion(n_dispositivo_id,n_calibracion_tanque,n_calibracion_puntos,n_calibracion_volumen,b_calibracion_activo) values";
-								$d=$datos['datos'];
-								for($i=0;$i<count($d);$i++){
-									$tanque=$d[$i]['tanque'];
-									$puntos=$d[$i]['puntos'];
-									$volumen=$d[$i]['volumen'];
-									$sql2.="(".$id.",".$tanque.",".$puntos.",".$volumen.",1)";
-									if($i==count($d)-1)
-										$sql2.=";";
-									else
-										$sql2.=",";
-								}
-								if(mysqli_query($this->con,$sql2)){
-									$sql="delete from dat_lastdata where n_dispositivo_id like '".$id."';";
-									if(mysqli_query($this->con,$sql)){
-										$d=$datos['datos'];
-										for($i=0;$i<count($d);$i++){
-											$tanque=$d[$i]['tanque'];
-											$volumen=$d[$i]['volumen'];
-											$tanques=$tanque;
-											$vt[$tanques]['ultimo']=$volumen;	
-										}
-										for($k=1;$k<=$tanques;$k++){
-											$sql.="insert into dat_lastdata(n_dispositivo_id,n_lastdata_tanque,n_lastdata_nivel,d_lastdata_fecha)values(".intval($id).",".intval($k).",".intval($vt[$k]['ultimo']).",'".$fecha."');";
-										}
-										if(mysqli_multi_query($this->con,$sql))
-											return "Dispositivo Registrado";
-										else	
-											return "Error al crear tablas extra.";
-									}else{
-										return "Error al actualizar ultimos datos.";
-									}
-								}else{
-									return "Error al agregar las nuevas calibraciones";
-								}
-							}else{
-								return "Error al eliminar calibraciones del dispositivo.";
-							}
-						}else{
-							return "Error al modificar el usuario.";
+			if($algo=mysqli_query($this->con,$sql)){
+				$sql2="insert into dat_calibracion(n_dispositivo_id,n_calibracion_tanque,n_calibracion_puntos,n_calibracion_volumen,b_calibracion_activo) values";
+				$d=$datos['datos'];
+				for($i=0;$i<count($d);$i++){
+					$tanque=$d[$i]['tanque'];
+					$puntos=$d[$i]['puntos'];
+					$volumen=$d[$i]['volumen'];
+					$sql2.="(".$id.",".$tanque.",".$puntos.",".$volumen.",1)";
+					if($i==count($d)-1)
+						$sql2.=";";
+					else
+						$sql2.=",";
+				}
+				if($algo=mysqli_query($this->con,$sql2)){
+					$sql="delete from dat_lastdata where n_dispositivo_id = '".$id."';";
+					if($algo=mysqli_query($this->con,$sql)){
+						$d=$datos['datos'];
+						for($i=0;$i<count($d);$i++){
+							$tanque=$d[$i]['tanque'];
+							$volumen=$d[$i]['volumen'];
+							$tanques=$tanque;
+							$vt[$tanques]['ultimo']=$volumen;	
+						}
+						for($k=1;$k<=$tanques;$k++){
+							$sql.="insert into dat_lastdata(n_dispositivo_id,n_lastdata_tanque,n_lastdata_nivel,d_lastdata_fecha)values(".intval($id).",".intval($k).",".intval($vt[$k]['ultimo']).",'".$fecha."');";
+						}
+						if($algo=mysqli_multi_query($this->con,$sql)){
+							$sqlj="alter table dat_carga_".$numeroDispositivo['c_dispositivo_id']." rename ".$id_disp.";";
+							//dat_descarga_
+							//dat_historico_
+							//dat_resumen_
+							//ADD_TO_RES_
+							//if($algo=mysqli_query($this->con,$sql))
+							return "Dispositivo modificado. ".$sqlj;
+						}
+						else{	
+							return "Error al modificar ultimos datos.";
 						}
 					}else{
-						return "Error al modificar el modelo.";
+						return "Error al actualizar ultimos datos.";
 					}
 				}else{
-					return "Error al modificar umbral de descarga.";
+					return "Error al agregar las nuevas calibraciones";
 				}
 			}else{
-				return "Error al modificar umbral de carga.";
+				return "Error al eliminar calibraciones del dispositivo.";
 			}
+						
 		}else{
-			return "Error al modificar el ID del dispositivo.";
+			return "Error al modificar datos del dispositivo.";
 		}
 	}
 	public function registrarUsuario($nombre,$con,$fecha,$tipo){
@@ -498,28 +494,16 @@ class Base_Dat_Calibracion{
 			return "No se pudo registrar la empresa".mysqli_error($this->con);
 	}
 	public function editarUsuario($datos){
-		$sql="update dat_usuario set c_usuario_nombre='".$datos['nombre']."' where n_usuario_id = ".$datos['id']." ";
+		$sql="update dat_usuario set c_usuario_nombre='".$datos['nombre']."',d_usuario_expiracion='".$datos['fecha']."',set n_tipousuario_id='".$datos['tipo']."' where n_usuario_id = ".$datos['id']." ";
 		if(mysqli_query($this->con,$sql)){
-			$sql="update dat_usuario set d_usuario_expiracion='".$datos['fecha']."' where n_usuario_id = ".$datos['id']." ";
-			if(mysqli_query($this->con,$sql)){
-				$sql="update dat_usuario set n_tipousuario_id='".$datos['tipo']."' where n_usuario_id = ".$datos['id']." ";
-				if(mysqli_query($this->con,$sql)){
-					return "Datos actualizados.";
-				}
-				else{
-					return "Error al actualizar el tipo de usuario.";
-				}
-			}
-			else{
-				return "Error al actualizar el fecha de expiración.";
-			}
+			return "Datos actualizados.";
 		}
 		else{
 			return "Error al actualizar el nombre.";
 		}
 	}
 	public function eliminarUsuario($disp){
-		$sql="update dat_usuario set b_usuario_activo = 0 where n_usuario_id like '".$disp."';";
+		$sql="update dat_usuario set b_usuario_activo = 0 where n_usuario_id = '".$disp."';";
 		if(mysqli_query($this->con,$sql))
 			return "Usuario eliminado.";
 		return "Error al eliminar el usuario.";
@@ -535,18 +519,12 @@ class Base_Dat_Calibracion{
 		return $us_dat;
 	}
 	public function editarModelo($datos){
-		$sql="update cat_modelo set c_modelo_nombre='".$datos['nombre']."' where n_modelo_id = ".$datos['id']." ";
+		$sql="update cat_modelo set c_modelo_nombre='".$datos['nombre']."',n_fabricante_id='".$datos['fab']."' where n_modelo_id = ".$datos['id']." ";
 		if(mysqli_query($this->con,$sql)){
-			$sql="update cat_modelo set n_fabricante_id='".$datos['fab']."' where n_modelo_id = ".$datos['id']." ";
-			if(mysqli_query($this->con,$sql)){
-				return "Modelo actualizado.";
-			}
-			else{
-				return "Error al actualizar el fabricante.";
-			}
+			return "Modelo actualizado.";
 		}
 		else{
-			return "Error al actualizar el nombre.";
+			return "Error al actualizar el modelo";
 		}
 	}
 	public function registrarModelo($nombre,$fab){

@@ -152,6 +152,7 @@ if($db->isError()){
 						<div class="form-group col-sm-3">
 								<input type="button" id="export-btn" value="Cargar" class="btn btn-primary"></input>
 								<input type="button" id="modificar-btn" value="Modificar" class="btn btn-primary hidden"></input>
+								
 								<button type="button" id="cerrarAlta" class="btn btn-danger" data-dismiss="modal">Cancelar</button>
 						</div>
 					</div>
@@ -415,7 +416,7 @@ if($db->isError()){
 			</div>
 			<div class="modal-footer" style="padding: 0px; border-style: none;">
 				<div class="form-group col-sm-12">
-					<input type="button" id="registrarMod" value="Modificar" class="btn btn-primary"></input>
+					<input type="button" id="registrarMod" value="Agregar" class="btn btn-primary"></input>
 					<button type="button" id="cerrarModAlt" class="btn btn-danger" data-dismiss="modal">Cancelar</button>
 				</div>
 			</div>
