@@ -556,5 +556,11 @@ class Base_Dat_Calibracion{
 		else
 			return "No se pudo registrar el modelo".mysqli_error($this->con);
 	}
+	public function eliminarModelo($mod){
+		$sql="delete from cat_modelo where n_modelo_id = ".$mod.";";
+		if(mysqli_query($this->con,$sql))
+			return "Modelo eliminado.";
+		return "Error al eliminar el modelo.";
+	}
 }
 ?>

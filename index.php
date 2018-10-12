@@ -422,6 +422,19 @@ if($db->isError()){
 		</div>
 	</div>
 </div> 
+<!-- Modal mensaje eliminar dispositivo-->
+<div id="modalEliminarMod" class="modal fade" role="dialog">
+	  <div class="modal-dialog" style="width: 350px;">
+		<div class="modal-content">
+			<div class="modal-header conazul">
+				<h4 class="modal-title">Eliminar modelo</h4>
+			</div>
+			<div class="modal-body" style="background-color: #fff; border-radius: 10px;" id="modeloEliminar">	
+			</div>
+		</div>
+	</div>
+</div>
+
 <!-- Modal errores-->
 <div id="modalError" class="modal fade" role="dialog" onclick="enfocar()" onkeyup="enfocar()">
 	  <div class="modal-dialog modal-sm" >

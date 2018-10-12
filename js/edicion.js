@@ -1003,7 +1003,7 @@ function cargarModelos(){
 							+"<span class='glyphicon glyphicon-trash'></span>"
 							+"</button>"
 							
-							+"<button data-toggle='modal' data-target='#modalEliminarM' id='mostrarMod2_"+id+"' type='button' class='btn btn-danger hidden'>"
+							+"<button data-toggle='modal' data-target='#modalEliminarMod' id='mostrarMod2_"+id+"' type='button' class='btn btn-danger hidden'>"
 							+"<span class='glyphicon glyphicon-trash'></span>"
 							+"</button>"
 							+"</td></tr>";
@@ -1092,4 +1092,23 @@ function registrarMod(){
 		campo=$('#nombreModA');
 		enfocar();
 	}
+}
+function eliminarModelo(i){
+	var us={
+		id:i
+	};
+	$.post(
+		'controlador/eliminarModelo.php',
+		us,
+		function(data){
+			if(data){
+				$("#usuarioEliminar").html("<p>"+data+"</p>");
+				$("#abrirmodal").click();
+				cargarModelos();
+				$("#eliminarCancelar").click();
+			}else{
+				$("#usuarioEliminar").append("No se puede borrar.");
+			}
+		},'json'
+	);
 }
