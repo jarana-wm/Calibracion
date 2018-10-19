@@ -260,6 +260,18 @@ class Base_Dat_Calibracion{
 			$datos=0;
 		return $datos;
 	}
+	public function obtenerFabricantes(){
+		$sql = "select * from cat_fabricante;";
+		$estat = mysqli_query($this->con,$sql);
+		while($q=mysqli_fetch_assoc($estat))
+			$us_dat[]=array(
+							'id_fab'=>$q['n_fabricante_id'],
+							'nom_fab' => $q['c_fabricante_nombre']
+						);	
+		return $us_dat;
+	}
+	
+	
 	public function registrarCalibracion($datos){
 		$usuario=$datos['usuario'];
 		$id=$datos['id_disp'];
@@ -280,7 +292,7 @@ class Base_Dat_Calibracion{
 		n_dispositivo_umbralcarga,c_dispositivo_ip,n_dispositivo_puerto,b_dispositivo_notificacion,b_dispositivo_activo)
 		values('".$id."',".$usuario.",".$modelo.",".$descarga.",".$carga.",'".$ip."',".$puerto.",".$notificacion.",1);";
 	
-		if (mysqli_query($this->con, $sql)) {
+		if ($result=mysqli_query($this->con, $sql)) {
 			$obtenID="select * from dat_dispositivo where c_dispositivo_id like '".$id."';";
 			$resultado = mysqli_query($this->con,$obtenID);
 			if($resultado->num_rows >0){
@@ -302,7 +314,7 @@ class Base_Dat_Calibracion{
 					else
 						$sql2.=",";
 				}
-				if (mysqli_query($this->con, $sql2)) {
+				if ($result=mysqli_query($this->con, $sql2)) {
 					//tablas extras
 					$sql3="CREATE TABLE dat_carga_".$id."(
 						  n_carga_id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
@@ -365,33 +377,42 @@ class Base_Dat_Calibracion{
 						  KEY fk_hist_disp_".$id." (n_dispositivo_id),
 						  CONSTRAINT dat_resumen_".$id."_ibfk_1 FOREIGN KEY (n_dispositivo_id) REFERENCES dat_dispositivo (n_dispositivo_id)
 						) ENGINE=InnoDB AUTO_INCREMENT=30410 DEFAULT CHARSET=latin1 COLLATE=latin1_spanish_ci;
-						CREATE TRIGGER ADD_TO_RES_".$id." AFTER INSERT ON dat_historico_".$id." FOR EACH ROW BEGIN
-						DECLARE lastNivel DOUBLE;
-						DECLARE lastFecha DOUBLE;
-						DECLARE timediff INT;
-						DECLARE ucarga INT;
-						DECLARE udescarga INT;
-									  SELECT b.d_lastdata_fecha,b.n_lastdata_nivel,n_dispositivo_umbralcarga, n_dispositivo_umbraldescarga INTO lastFecha,lastNivel,ucarga,udescarga  FROM dat_dispositivo a, dat_lastdata b WHERE a.n_dispositivo_id = b.n_dispositivo_id AND b.n_dispositivo_id=NEW.n_dispositivo_id AND b.n_lastdata_tanque=NEW.n_historico_tanque;
-									  SELECT ABS(TIMESTAMPDIFF(SECOND,lastFecha,NEW.d_historico_fecha)) INTO timediff;        	
-						#IF timediff > 600 OR lastNivel <> NEW.n_historico_nivel THEN
-						   INSERT INTO dat_resumen_".$id."(n_dispositivo_id, n_historico_tanque,d_historico_fecha,n_historico_longitud,n_historico_latitud,n_historico_velocidad,n_historico_rumbo,c_historico_fix,b_historico_ignicion,n_historico_nivel,n_historico_puntos) 
-						   VALUES(NEW.n_dispositivo_id, NEW.n_historico_tanque,NEW.d_historico_fecha,NEW.n_historico_longitud,NEW.n_historico_latitud,NEW.n_historico_velocidad,NEW.n_historico_rumbo,NEW.c_historico_fix,NEW.b_historico_ignicion,NEW.n_historico_nivel,NEW.n_historico_puntos);
-										  UPDATE dat_lastdata SET d_lastdata_fecha = NEW.d_historico_fecha, n_lastdata_nivel=NEW.n_historico_nivel WHERE n_dispositivo_id=NEW.n_dispositivo_id AND n_lastdata_tanque=NEW.n_historico_tanque;
-						#END IF;
-									   IF NEW.n_historico_nivel-lastNivel >= ucarga THEN
-										  INSERT INTO dat_carga_".$id."(n_dispositivo_id,n_carga_tanque,d_carga_fechainicio,d_carga_fechafin,b_carga_volumen,n_carga_longitud,n_carga_latitud) VALUES(NEW.n_dispositivo_id, NEW.n_historico_tanque,lastFecha,NEW.d_historico_fecha,NEW.n_historico_nivel-lastNivel,NEW.n_historico_longitud,NEW.n_historico_latitud);
-									   END IF;
-									   IF lastNivel-NEW.n_historico_nivel >= ucarga THEN
-										  INSERT INTO dat_descarga_".$id."(n_dispositivo_id,n_descarga_tanque,d_descarga_fechainicio,d_descarga_fechafin,b_descarga_volumen,n_descarga_longitud,n_descarga_latitud) VALUES(NEW.n_dispositivo_id, NEW.n_historico_tanque,lastFecha,NEW.d_historico_fecha,lastNivel-NEW.n_historico_nivel,NEW.n_historico_longitud,NEW.n_historico_latitud);
-									   END IF;
-					END;";
+CREATE TRIGGER ADD_TO_RES_".$id." AFTER INSERT ON dat_historico_".$id." 
+FOR EACH ROW 
+BEGIN
+    DECLARE lastNivel DOUBLE;
+    DECLARE lastFecha DOUBLE;
+    DECLARE timediff INT;
+    DECLARE ucarga INT;
+    DECLARE udescarga INT;
+	
+	  SELECT b.d_lastdata_fecha,b.n_lastdata_nivel,a.n_dispositivo_umbralcarga, a.n_dispositivo_umbraldescarga INTO lastFecha,lastNivel,ucarga,udescarga
+	  FROM dat_dispositivo a, dat_lastdata b
+	  WHERE a.n_dispositivo_id = b.n_dispositivo_id 
+	  AND b.n_dispositivo_id=NEW.n_dispositivo_id 
+	  AND b.n_lastdata_tanque=NEW.n_historico_tanque;
+	  SELECT ABS(TIMESTAMPDIFF(SECOND,lastFecha,NEW.d_historico_fecha))
+	  INTO timediff;
+	   INSERT INTO dat_resumen_".$id."(n_dispositivo_id, n_historico_tanque,d_historico_fecha,n_historico_longitud,n_historico_latitud,n_historico_velocidad,n_historico_rumbo,c_historico_fix,b_historico_ignicion,n_historico_nivel,n_historico_puntos) 
+	   VALUES(NEW.n_dispositivo_id, NEW.n_historico_tanque,NEW.d_historico_fecha,NEW.n_historico_longitud,NEW.n_historico_latitud,NEW.n_historico_velocidad,NEW.n_historico_rumbo,NEW.c_historico_fix,NEW.b_historico_ignicion,NEW.n_historico_nivel,NEW.n_historico_puntos);
+                      UPDATE dat_lastdata SET d_lastdata_fecha = NEW.d_historico_fecha, n_lastdata_nivel=NEW.n_historico_nivel WHERE n_dispositivo_id=NEW.n_dispositivo_id AND n_lastdata_tanque=NEW.n_historico_tanque;
+
+
+	   IF NEW.n_historico_nivel >= ucarga THEN
+		  INSERT INTO dat_carga_".$id."(n_dispositivo_id,n_carga_tanque,d_carga_fechainicio,d_carga_fechafin,b_carga_volumen,n_carga_longitud,n_carga_latitud) VALUES(NEW.n_dispositivo_id, NEW.n_historico_tanque,lastFecha,NEW.d_historico_fecha,NEW.n_historico_nivel,NEW.n_historico_longitud,NEW.n_historico_latitud);
+	   END IF;
+
+	   IF NEW.n_historico_nivel >= ucarga THEN
+		  INSERT INTO dat_descarga_".$id."(n_dispositivo_id,n_descarga_tanque,d_descarga_fechainicio,d_descarga_fechafin,b_descarga_volumen,n_descarga_longitud,n_descarga_latitud) VALUES(NEW.n_dispositivo_id, NEW.n_historico_tanque,lastFecha,NEW.d_historico_fecha,NEW.n_historico_nivel,NEW.n_historico_longitud,NEW.n_historico_latitud);
+	   END IF;
+END ;";
 					for($k=1;$k<=$tanques;$k++){
 						$sql3.="insert into dat_lastdata(n_dispositivo_id,n_lastdata_tanque,n_lastdata_nivel,d_lastdata_fecha)values(".intval($id_d).",".intval($k).",".intval($vt[$k]['ultimo']).",'".$fecha."');";
 					}
-					if(mysqli_multi_query($this->con,$sql3))
+					if($result=mysqli_multi_query($this->con,$sql3)){
 						return true;
-					else	
-						return "Error al crear tablas.".mysqli_error($this->con);
+					}else	
+						return "Error al crear tablas.";
 				}else{
 					if(mysqli_query($this->con, "delete from dat_dispositivo where c_dispositivo_id like '".$id."';")){
 						return "No se pudo registrar, accion deshecha";
@@ -414,7 +435,6 @@ class Base_Dat_Calibracion{
 		return "Error al eliminar el dispositivo.";
 	}
 	public function editarDispositivo($datos){
-		
 		$id=$datos['id'];
 		$id_disp=$datos['id_disp'];
 		$modelo=$datos['modelo'];
@@ -425,10 +445,8 @@ class Base_Dat_Calibracion{
 		$sql="select c_dispositivo_id from dat_dispositivo where n_dispositivo_id=".$id.";";
 		$res=mysqli_query($this->con,$sql);
 		$numeroDispositivo=mysqli_fetch_assoc($res);
-		
-		
 		$sql="update dat_dispositivo
-			set c_dispositivo_id=".$id_disp." , n_dispositivo_umbralcarga=".$carga.",n_dispositivo_umbraldescarga=".$descarga.",n_modelo_id=".$modelo.",n_usuario_id=".$usuario."
+			set n_dispositivo_umbralcarga=".$carga.",n_dispositivo_umbraldescarga=".$descarga.",n_modelo_id=".$modelo.",n_usuario_id=".$usuario."
 			where n_dispositivo_id = ".$id.";";
 		if($algo=mysqli_query($this->con,$sql)){
 			$sql="update dat_calibracion
@@ -461,13 +479,7 @@ class Base_Dat_Calibracion{
 							$sql.="insert into dat_lastdata(n_dispositivo_id,n_lastdata_tanque,n_lastdata_nivel,d_lastdata_fecha)values(".intval($id).",".intval($k).",".intval($vt[$k]['ultimo']).",'".$fecha."');";
 						}
 						if($algo=mysqli_multi_query($this->con,$sql)){
-							$sqlj="alter table dat_carga_".$numeroDispositivo['c_dispositivo_id']." rename ".$id_disp.";";
-							//dat_descarga_
-							//dat_historico_
-							//dat_resumen_
-							//ADD_TO_RES_
-							//if($algo=mysqli_query($this->con,$sql))
-							return "Dispositivo modificado. ".$sqlj;
+								return "Dispositivo modificado.";
 						}
 						else{	
 							return "Error al modificar ultimos datos.";
@@ -494,12 +506,12 @@ class Base_Dat_Calibracion{
 			return "No se pudo registrar la empresa".mysqli_error($this->con);
 	}
 	public function editarUsuario($datos){
-		$sql="update dat_usuario set c_usuario_nombre='".$datos['nombre']."',d_usuario_expiracion='".$datos['fecha']."',set n_tipousuario_id='".$datos['tipo']."' where n_usuario_id = ".$datos['id']." ";
+		$sql="update dat_usuario set c_usuario_nombre='".$datos['nombre']."',d_usuario_expiracion='".$datos['fecha']."', n_tipousuario_id=".$datos['tipo']." where n_usuario_id = ".$datos['id'].";";
 		if(mysqli_query($this->con,$sql)){
 			return "Datos actualizados.";
 		}
 		else{
-			return "Error al actualizar el nombre.";
+			return "Error al actualizar la empresa.".mysqli_error($this->con);
 		}
 	}
 	public function eliminarUsuario($disp){
@@ -507,16 +519,6 @@ class Base_Dat_Calibracion{
 		if(mysqli_query($this->con,$sql))
 			return "Usuario eliminado.";
 		return "Error al eliminar el usuario.";
-	}
-	public function obtenerFabricantes(){
-		$sql = "select * from cat_fabricante;";
-		$estat = mysqli_query($this->con,$sql);
-		while($q=mysqli_fetch_assoc($estat))
-			$us_dat[]=array(
-							'id_fab'=>$q['n_fabricante_id'],
-							'nom_fab' => $q['c_fabricante_nombre']
-						);	
-		return $us_dat;
 	}
 	public function editarModelo($datos){
 		$sql="update cat_modelo set c_modelo_nombre='".$datos['nombre']."',n_fabricante_id='".$datos['fab']."' where n_modelo_id = ".$datos['id']." ";
@@ -540,5 +542,13 @@ class Base_Dat_Calibracion{
 			return "Modelo eliminado.";
 		return "Error al eliminar el modelo.";
 	}
+	public function guardarLog($datos){
+		$sql="insert into log_acciones(n_accion_id,n_usuario_id,d_fecha_log,c_usuario_ip,c_string_log)
+		values(".$datos['accion'].",".$datos['usuario'].",'".$datos['fecha']."','".$datos['ip']."','".$datos['str']."');";
+		if(mysqli_query($this->con,$sql))
+			return true;
+		return false;
+	}
+	
 }
 ?>

@@ -5,13 +5,16 @@ var dis;
 var idE;
 var idM;
 var datUsuario;
-var id_us;
+var usses;
 $(document).ready(function(){
 	if(datUsuario!=0){
 		vista();
 		restaurar();
 		cargarDisp();
 	}
+	 $("#modalAlta").on('hidden.bs.modal', function () {
+            restaurar();
+    });
 	$("#aceptarMensaje").click(function(){
 		enfocar();
 	});
@@ -112,6 +115,7 @@ $(document).ready(function(){
 								var segundos = parseInt(sistema.getSeconds());
 								
 								var reg={
+									'user': usses,
 									'id_disp': $("#idDisp").val(),
 									'usuario': $("#usuariosSel").val(),
 									'carga': $("#uCarga").val(),
@@ -149,6 +153,7 @@ $(document).ready(function(){
 		}
 	});
 	$('#modificar-btn').click(function(){
+		
 		var arreglo=[];
 		var vacios=false;
 		var tvacio=0;
@@ -212,6 +217,7 @@ $(document).ready(function(){
 								var segundos = parseInt(sistema.getSeconds());
 								
 								var reg={
+									'user': usses,
 									'id': dis,
 									'id_disp': $("#idDisp").val(),
 									'usuario': $("#usuariosSel").val(),
@@ -307,9 +313,18 @@ $(document).ready(function(){
 					vi: idE},
 					function(res){
 						if(res===false){
+							var sistema= new Date();
+							var dia = parseInt(sistema.getDate());
+							var mes = parseInt(sistema.getMonth())+1;
+							var ano = parseInt(sistema.getFullYear());
+							var hora = parseInt(sistema.getHours());
+							var minuto = parseInt(sistema.getMinutes());
+							var segundos = parseInt(sistema.getSeconds());
 							var dat={
+								user: usses,
 								id: idE,
 								nombre: $('#modeloNomE').val(),
+								fechasis: ano+"-"+mes+"-"+dia+" "+hora+":"+minuto+":"+segundos,
 								fecha: $('#modeloFechaE').val(),
 								tipo: $('#usuariosSelE').val()
 							};
@@ -353,10 +368,20 @@ $(document).ready(function(){
 					vi: idM},
 					function(res){
 						if(res===false){
+							var sistema= new Date();
+							var dia = parseInt(sistema.getDate());
+							var mes = parseInt(sistema.getMonth())+1;
+							var ano = parseInt(sistema.getFullYear());
+							var hora = parseInt(sistema.getHours());
+							var minuto = parseInt(sistema.getMinutes());
+							var segundos = parseInt(sistema.getSeconds());
+									
 							var dat={
+								user: usses,
 								id: idM,
 								nombre: $('#nombreMod').val(),
-								fab: $('#selectFab').val()
+								fab: $('#selectFab').val(),
+								fecha: ano+"-"+mes+"-"+dia+" "+hora+":"+minuto+":"+segundos
 							};
 							var json=JSON.stringify(dat);
 							$.post(
@@ -570,7 +595,7 @@ function cargarDisp(){
 			method : "post",
 			url: 'controlador/obtenerDispositivos.php', 
 			dataType:'json',			
-			data: {tipo: datUsuario, id: id_us},
+			data: {tipo: datUsuario, id: usses},
 			success: function(data){
 					$("#resultado").html("");
 					var fecha= new Date();
@@ -675,7 +700,7 @@ function mostrarEditarDis(i){
 		'controlador/datosDispositivo.php',
 		us,
 		function(data){
-			
+			$("#idDisp").prop( "disabled", true );
 			$("#title").html("Modificar "+data[0].id_disp);
 			$("#idDisp").val(data[0].id_disp);
 			$("#uCarga").val(data[0].carga);
@@ -699,7 +724,7 @@ function mostrarEditarDis(i){
 			}else{
 				var num_tan=1;
 			}
-			var dat_us={tipo: datUsuario, id: id_us};
+			var dat_us={tipo: datUsuario, id: usses};
 			$.post(
 				'controlador/obtenerUsuarios.php',	
 				dat_us,
@@ -738,6 +763,7 @@ function editarDis(){
 }
 function restaurar(){	
 	$("#idDisp").val("");
+	$("#idDisp").prop( "disabled", false);
 	document.getElementById('uCarga').value='10';
 	document.getElementById('uDescarga').value='10';
 	document.getElementById('modelo').value='1';
@@ -749,7 +775,7 @@ function restaurar(){
 	$("#export-btn").removeClass("hidden");
 	
 	$("#title").html("Alta de dispositivo");
-	var dat_us={tipo: datUsuario, id: id_us};
+	var dat_us={tipo: datUsuario, id: usses};
 	$.post(
 		'controlador/obtenerUsuarios.php',
 		dat_us,
@@ -786,8 +812,18 @@ function vista(){
 	}
 }
 function eliminarDis(i){
+	var sistema= new Date();
+	var dia = parseInt(sistema.getDate());
+	var mes = parseInt(sistema.getMonth())+1;
+	var ano = parseInt(sistema.getFullYear());
+	var hora = parseInt(sistema.getHours());
+	var minuto = parseInt(sistema.getMinutes());
+	var segundos = parseInt(sistema.getSeconds());
+								
 	var us={
-		id:i
+		user: usses,
+		id:i,
+		fecha: ano+"-"+mes+"-"+dia+" "+hora+":"+minuto+":"+segundos,
 	};
 	$.post(
 		'controlador/eliminarDispositivo.php',
@@ -806,7 +842,7 @@ function eliminarDis(i){
 }
 function cargarUsuarios(){
 	$("#carga").show();
-	var dat_us={tipo: datUsuario, id: id_us};
+	var dat_us={tipo: datUsuario, id: usses};
 	$.post(
 		'controlador/obtenerUsuarios.php',
 		dat_us,
@@ -894,7 +930,7 @@ function registrarEmp(){
 	if(nom.val()!=" "&&nom.val()!=""&&validarTexto(nom.val())){
 		$.post(
 			'controlador/buscarEmpresa.php',
-			{nombre:nom.val()},
+			{nombre:nom.val(),poit: 1,vi:0},
 			function(res){
 				if(res===false){
 					if(psw1.val()!=" "&&psw1.val()!=""&&validarContrasena(psw1.val())){
@@ -902,11 +938,21 @@ function registrarEmp(){
 								if(psw1.val()==psw2.val()){
 									if(validarFecha(fecha.val())){
 										if(validarTipo(tipo.val())){
+											var sistema= new Date();
+											var dia = parseInt(sistema.getDate());
+											var mes = parseInt(sistema.getMonth())+1;
+											var ano = parseInt(sistema.getFullYear());
+											var hora = parseInt(sistema.getHours());
+											var minuto = parseInt(sistema.getMinutes());
+											var segundos = parseInt(sistema.getSeconds());
+
 											var reg={
+												user: usses,
 												nombre: nom.val(),
-													contrasena: psw1.val(),
-													fechaExp: fecha.val(),
-													tipoUs: tipo.val()
+												contrasena: psw1.val(),
+												fechaExp: fecha.val(),
+												fecha: ano+"-"+mes+"-"+dia+" "+hora+":"+minuto+":"+segundos,
+												tipoUs: tipo.val()
 											};
 											$.post(
 											'controlador/registrarUsuario.php',
@@ -999,8 +1045,18 @@ function mostrarEliminarUsu(i){
 	);
 }
 function eliminarUsuario(i){
+	var sistema= new Date();
+	var dia = parseInt(sistema.getDate());
+	var mes = parseInt(sistema.getMonth())+1;
+	var ano = parseInt(sistema.getFullYear());
+	var hora = parseInt(sistema.getHours());
+	var minuto = parseInt(sistema.getMinutes());
+	var segundos = parseInt(sistema.getSeconds());
+			
 	var us={
-		id:i
+		id:i,
+		user: usses,
+		fecha: ano+"-"+mes+"-"+dia+" "+hora+":"+minuto+":"+segundos
 	};
 	$.post(
 		'controlador/eliminarUsuario.php',
@@ -1019,7 +1075,7 @@ function eliminarUsuario(i){
 }
 function cargarModelos(){
 	$("#carga").show();
-	var dat_us={tipo: datUsuario, id: id_us};
+	var dat_us={tipo: datUsuario, id: usses};
 	$.post(
 		'controlador/obtenerModelos.php',
 		dat_us,
@@ -1105,12 +1161,21 @@ function registrarMod(){
 	if(validarNombre($('#nombreModA').val())&&$('#nombreModA').val()!=''&&$('#nombreModA').val()!=' '){
 		$.post(
 			'controlador/buscarModelo.php',
-			{nombre:$('#nombreModA').val()},
+			{nombre:$('#nombreModA').val(),poit:1, vi:0},
 			function(res){
 				if(res===false){
+					var sistema= new Date();
+					var dia = parseInt(sistema.getDate());
+					var mes = parseInt(sistema.getMonth())+1;
+					var ano = parseInt(sistema.getFullYear());
+					var hora = parseInt(sistema.getHours());
+					var minuto = parseInt(sistema.getMinutes());
+					var segundos = parseInt(sistema.getSeconds());
+							
+					us['user']= usses;
 					us['nombre']=$('#nombreModA').val();
 					us['fabricante']=$('#selectFabA').val();
-					
+					us['fecha']=ano+"-"+mes+"-"+dia+" "+hora+":"+minuto+":"+segundos;
 					$.post(
 						'controlador/registrarModelo.php',
 						us,
@@ -1135,8 +1200,18 @@ function registrarMod(){
 	}
 }
 function eliminarModelo(i){
+	var sistema= new Date();
+	var dia = parseInt(sistema.getDate());
+	var mes = parseInt(sistema.getMonth())+1;
+	var ano = parseInt(sistema.getFullYear());
+	var hora = parseInt(sistema.getHours());
+	var minuto = parseInt(sistema.getMinutes());
+	var segundos = parseInt(sistema.getSeconds());
+			
 	var us={
-		id:i
+		id:i,
+		user: usses,
+		fecha: ano+"-"+mes+"-"+dia+" "+hora+":"+minuto+":"+segundos
 	};
 	$.post(
 		'controlador/eliminarModelo.php',

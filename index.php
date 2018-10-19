@@ -14,13 +14,14 @@ if($db->isError()){
 	if($dato==0||$dato[0]['estado']==0){
 		echo "<script>
 		datUsuario=0;
-		id_us=0;
+		usses=0;
 		</script>";
 		echo "<h3>No eres usuario... redirigiendo jejej</h3>";
 	}else{
+		echo "<h3>Bienvenido ".$dato[0]['nombre']."</h3>";
 		echo "<script>
 		datUsuario=".$dato[0]['tipo'].";
-		id_us=".$dato[0]['id_us'].";
+		usses=".$dato[0]['id_us'].";
 		</script>";
 	}
 }
@@ -185,7 +186,7 @@ if($db->isError()){
 							</div>
 							<div class="form-group">
 								<input type="button" id="btnArchivo2" value="Importar" onclick="ExportToTable(2)" class="btn btn-primary" disabled="true"></input> 
-								<input type="button" id="btnClean1" value="Limpiar" onclick="limpiar(2)" class="btn"></input>				
+								<input type="button" id="btnClean2" value="Limpiar" onclick="limpiar(2)" class="btn"></input>				
 							</div>
 						<div id="table2" class="table-editable" style=" overflow-y: scroll; height: 350px;">
 							<table id="exceltable2"  class="tab">	
@@ -205,7 +206,7 @@ if($db->isError()){
 							</div>
 							<div class="form-group">
 								<input type="button" id="btnArchivo3" value="Importar" onclick="ExportToTable(3)" class="btn btn-primary" disabled="true"></input>  
-								<input type="button" id="btnClean1" value="Limpiar" onclick="limpiar(3)" class="btn"></input>
+								<input type="button" id="btnClean3" value="Limpiar" onclick="limpiar(3)" class="btn"></input>
 							</div>
 						<div id="table3" class="table-editable" style=" overflow-y: scroll; height: 350px;">
 							<table id="exceltable3"  class="tab">	
@@ -225,7 +226,7 @@ if($db->isError()){
 							</div>
 							<div class="form-group">
 								<input type="button" id="btnArchivo4" value="Importar" onclick="ExportToTable(4)" class="btn btn-primary" disabled="true"></input>  
-								<input type="button" id="btnClean1" value="Limpiar" onclick="limpiar(4)" class="btn"></input>
+								<input type="button" id="btnClean4" value="Limpiar" onclick="limpiar(4)" class="btn"></input>
 							</div>
 						<div id="table4" class="table-editable " style=" overflow-y: scroll; height: 350px;">
 							<table id="exceltable4"  class="tab">	

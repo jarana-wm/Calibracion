@@ -4,7 +4,11 @@
 	if($db->isError()){
 		die("Error al conectar con la base de datos!");
 	}else{
+		
 		$dato=$db->eliminarDispositivo($_POST['id']);
+		$llega=json_encode($_POST);
+		$guardar=array('accion'=>3,'usuario'=>$_POST['user'],'fecha'=>$_POST['fecha'],'ip'=>'127.0.0.1','str'=>$llega);
+		$db->guardarLog($guardar);
 		$db->closeConexion();
 		header('Content-type: application/json');
 		echo json_encode($dato);
