@@ -549,6 +549,25 @@ END ;";
 			return true;
 		return false;
 	}
+	public function guardarAcceso($datos){
+		$sql="insert into log_accesos(n_usuario_id,d_fecha_log,c_usuario_ip)
+		values(".$datos['usuario'].",'".$datos['fecha']."','".$this->getUserIpAddress()."');";
+		if(mysqli_query($this->con,$sql))
+			return true;
+		return false;
+	}
+	public function getUserIpAddress() {
+		if(!empty($_SERVER['HTTP_CLIENT_IP'])){
+			//IP de un servicio compartido
+			$ip = $_SERVER['HTTP_CLIENT_IP'];
+		}elseif(!empty($_SERVER['HTTP_X_FORWARDED_FOR'])){
+			//IP pass from proxy
+			$ip = $_SERVER['HTTP_X_FORWARDED_FOR'];
+		}else{
+			$ip = $_SERVER['REMOTE_ADDR'];
+		}
+		return $ip;
+    }
 	
 }
 ?>

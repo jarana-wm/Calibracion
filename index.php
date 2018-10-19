@@ -6,25 +6,25 @@ if(!isset($_GET['u'])){
    header('HTTP/1.0 401 Unauthorized');
    exit();
 }
-if($db->isError()){
+if($db->isError())
 	die("Error al conectar con la base de datos!");
+$dato=$db->obtenerDatUs($_GET["u"]);
+if($dato==0||$dato[0]['estado']==0){
+	echo "<script>
+	datUsuario=0;
+	usses=0;
+	</script>";
+	echo "<h3>No eres usuario... redirigiendo jejej</h3>";
 }else{
-	$dato=$db->obtenerDatUs($_GET["u"]);
-	$db->closeConexion();
-	if($dato==0||$dato[0]['estado']==0){
-		echo "<script>
-		datUsuario=0;
-		usses=0;
-		</script>";
-		echo "<h3>No eres usuario... redirigiendo jejej</h3>";
-	}else{
-		echo "<h3>Bienvenido ".$dato[0]['nombre']."</h3>";
-		echo "<script>
-		datUsuario=".$dato[0]['tipo'].";
-		usses=".$dato[0]['id_us'].";
-		</script>";
-	}
+	$acceso=array('usuario'=>$dato[0]['id_us'],'fecha'=>date("Y-m-d H:i:s"), 'ip'=>'127.0.0.1');
+	$db->guardarAcceso($acceso);
+	echo "<h3>Bienvenido ".$dato[0]['nombre']."</h3>";
+	echo "<script>
+	datUsuario=".$dato[0]['tipo'].";
+	usses=".$dato[0]['id_us'].";
+	</script>";
 }
+$db->closeConexion();
 ?>
 <html>
 <head>
