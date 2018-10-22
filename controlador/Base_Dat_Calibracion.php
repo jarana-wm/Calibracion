@@ -466,27 +466,7 @@ END ;";
 						$sql2.=",";
 				}
 				if($algo=mysqli_query($this->con,$sql2)){
-					$sql="delete from dat_lastdata where n_dispositivo_id = '".$id."';";
-					if($algo=mysqli_query($this->con,$sql)){
-						$d=$datos['datos'];
-						for($i=0;$i<count($d);$i++){
-							$tanque=$d[$i]['tanque'];
-							$volumen=$d[$i]['volumen'];
-							$tanques=$tanque;
-							$vt[$tanques]['ultimo']=$volumen;	
-						}
-						for($k=1;$k<=$tanques;$k++){
-							$sql.="insert into dat_lastdata(n_dispositivo_id,n_lastdata_tanque,n_lastdata_nivel,d_lastdata_fecha)values(".intval($id).",".intval($k).",".intval($vt[$k]['ultimo']).",'".$fecha."');";
-						}
-						if($algo=mysqli_multi_query($this->con,$sql)){
-								return "Dispositivo modificado.";
-						}
-						else{	
-							return "Error al modificar ultimos datos.";
-						}
-					}else{
-						return "Error al actualizar ultimos datos.";
-					}
+					return "Dispositivo modificado.";
 				}else{
 					return "Error al agregar las nuevas calibraciones";
 				}

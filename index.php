@@ -150,7 +150,10 @@ $db->closeConexion();
 								</div>
 							</div>
 						</div>
-						<div class="form-group col-sm-3">
+						<div class="col-sm-3">
+							<input type="button" class="btn btn-info" value="Plantilla Excel" id="descargarPlantilla"></input>
+						</div>
+						<div class="form-group col-sm-3 pull-right">
 								<input type="button" id="export-btn" value="Cargar" class="btn btn-primary"></input>
 								<input type="button" id="modificar-btn" value="Modificar" class="btn btn-primary hidden"></input>
 								

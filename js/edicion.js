@@ -427,6 +427,9 @@ $(document).ready(function(){
 	$('#registrarMod').click(function(){
 		registrarMod();
 	});
+	$('#descargarPlantilla').click(function(){
+		window.open('excel/Plantilla.xlsx','_blank');
+	});
 });
 function validarNumero(num){
 	regex = /\d{1,3}/;
@@ -467,8 +470,8 @@ function habilitar(i){
 }
 function BindTable(jsondata, tableid) { 
 	for(var i = 0; i < jsondata.length; i++) { 
-		var row="<tr><td contenteditable='true'>"+jsondata[i].puntos+"</td>"+
-				"<td contenteditable='true'>"+jsondata[i].volumen+"</td>"+
+		var row="<tr><td contenteditable='true'>"+jsondata[i].Puntos+"</td>"+
+				"<td contenteditable='true'>"+jsondata[i].Volumen+"</td>"+
 				"<td><span class='table-remove glyphicon glyphicon-remove-sign' onclick='eliminar(this)'></span>"+
 				"</td><td>"+
 				" <span class='table-up glyphicon glyphicon-chevron-up' onclick='arriba(this)'></span>"+
