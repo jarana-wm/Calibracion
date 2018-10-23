@@ -538,10 +538,8 @@ END ;";
 	}
 	public function getUserIpAddress() {
 		if(!empty($_SERVER['HTTP_CLIENT_IP'])){
-			//IP de un servicio compartido
 			$ip = $_SERVER['HTTP_CLIENT_IP'];
 		}elseif(!empty($_SERVER['HTTP_X_FORWARDED_FOR'])){
-			//IP pass from proxy
 			$ip = $_SERVER['HTTP_X_FORWARDED_FOR'];
 		}else{
 			$ip = $_SERVER['REMOTE_ADDR'];

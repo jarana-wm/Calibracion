@@ -28,7 +28,7 @@ $db->closeConexion();
 ?>
 <html>
 <head>
-	<title>Calibración de combustible</title>
+	<title>Calibraci&oacute;n de combustible</title>
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<link rel="stylesheet" href="frameworks/bootstrap-3.3.7/css/bootstrap.min.css">
@@ -45,7 +45,7 @@ $db->closeConexion();
    </div>
 <div class="container-fluid"> 
 <ul class="nav nav-tabs">
-  <li id="menuCalibracion" class="active"><a>Calibración de dispositivos</a></li>
+  <li id="menuCalibracion" class="active"><a>Calibraci&oacute;n de dispositivos</a></li>
   <li id="menuEmpresa"><a>Alta de empresa</a></li>
   <li id="menuModelo"><a>Alta de modelo</a></li>
 </ul>
@@ -68,7 +68,7 @@ $db->closeConexion();
 		<div style="height: 400px; overflow-y: scroll;" class="col-md-12">
 			<table id="tblEmpresa">
 				<thead style="z-index: 1;">
-					<tr> <th>id</th><th>Nombre</th><th>Token</th><th>Fecha expiracion</th><th>Tipo</th><th style="width: 100px;">Comandos</th></tr>
+					<tr> <th>id</th><th>Nombre</th><th>Token</th><th>Fecha expiraci&oacute;n</th><th>Tipo</th><th style="width: 100px;">Comandos</th></tr>
 				</thead>
 				<tbody id="resultadoEpresa">
 				</tbody>
@@ -283,7 +283,7 @@ $db->closeConexion();
 					</div>
 				</div>
 				<div class="form-group">
-					<label>Fecha de expiracion:</label>
+					<label>Fecha de expiraci&oacute;n:</label>
 					<input type="date" class="form-control" id="modeloFecha" placeholder="Nombre"></input>
 				</div>
 				<div class="form-group">
@@ -317,7 +317,7 @@ $db->closeConexion();
 				</div>
 				
 				<div class="form-group">
-					<label>Fecha de expiracion:</label>
+					<label>Fecha de expiraci&oacute;n:</label>
 					<input type="date" class="form-control" id="modeloFechaE" placeholder="Nombre"></input>
 				</div>
 				<div class="form-group">
